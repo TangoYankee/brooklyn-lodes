@@ -50,10 +50,10 @@ tmap::tm_shape(bk_dest_borders) +
   )
 ```
 
-### Moran's I Test: GLOBAL
+### Moran's I Test: Global 
 ```{r, message=FALSE}
 bkTractNeighbors <- bk_dest_borders %>%
-  spdep::poly2nb(c("cartodb_id")) %>%
+  spdep::poly2nb(c("w_census_tract")) %>%
   spdep::nb2listw(zero.policy = TRUE)
 
 bkGlobalMoran <- bkTractNeighbors %>%
@@ -134,11 +134,6 @@ bk_od_undirected <- bk_od %>%
 ``` 
  
 ```{r, message=FALSE}
-## bk_dest : in
-## bk_tract_neighbors : in
-## bk_tract_neighbors_map: intermediar
-## bk_dest_neighbors: out
-## TODO: check on list for nb list. Was cartodbid
 bk_tract_neighbors <- bk_dest_borders %>%
   spdep::poly2nb(c("w_census_tract"))
   
@@ -147,7 +142,6 @@ for (i in 1:length(bk_tract_neighbors_map)) {
   neighbor_positions <- bk_tract_neighbors[[i]]
   neighbors <- vector(length = length(neighbor_positions))
   for(j in 1:length(neighbors)) {
-    ## neighbors[j] <- bk_tract_neighbors[[neighbor_positions[j]]]
     neighbors[j] <- bk_dest$w_census_tract[neighbor_positions[[j]]]
   }
   bk_tract_neighbors_map[[i]] <- neighbors
@@ -162,7 +156,8 @@ bk_od_undirected_neighbors <- bk_od_undirected %>%
   dplyr::mutate(census_tract_a = stringr::str_sub(trip, 1, 6)) %>%
   dplyr::mutate(census_tract_b = stringr::str_sub(trip, 7, 12)) %>%
   dplyr::left_join(bk_dest_neighbors, c("census_tract_a" = "census_tract")) %>%
-  dplyr::mutate(are_neighbors = ifelse(census_tract_b %in% unlist(neighbors), 1, 0))
+  dplyr::rowwise() %>%
+  dplyr::mutate(are_neighbors = ifelse(census_tract_b %in% neighbors, 1, 0))
 
 sum(bk_od_undirected_neighbors$are_neighbors)
 

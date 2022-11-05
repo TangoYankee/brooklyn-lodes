@@ -65,7 +65,7 @@ tmap::tm_shape(bk_dest_borders) +
     style = "jenks",
     title = "Count"
   ) + tmap::tm_layout(
-    title = "Jobs in each tract",
+    title = "Jobs in each nta",
     legend.outside = TRUE
   )
 ```
@@ -136,7 +136,7 @@ ggplot(bk_dest_borders) +
 ### Regression
 ```{r, message=FALSE}
 bk_od_undirected <- bk_od %>%
-  ## Only trips that leave the tract
+  ## Only trips that leave the nta
   dplyr::filter(w_nta_code != h_nta_code) %>%
   dplyr::mutate(
       trip = stringr::str_c(
