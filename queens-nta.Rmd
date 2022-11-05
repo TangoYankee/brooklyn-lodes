@@ -43,23 +43,21 @@ bk_od <- bk_od_tract %>%
   dplyr::rename(w_nta_code = nta_code) %>%
   dplyr::left_join(bk_tract_nta_equiv, c("h_tract" = "tract")) %>%
   dplyr::rename(h_nta_code = nta_code) %>%
-  dplyr::select("h_nta_code", "w_nta_code", "S000")
+  dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
+  dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks)
 ```
 
 ```{r, message=FALSE}
 bk_dest <- bk_od %>%
-  dplyr::group_by(w_census_tract) %>%
+  dplyr::group_by(w_nta_code) %>%
   dplyr::summarise(
     S000 = sum(S000)
   ) %>%
   unique()
 
 bk_dest_borders <- bk_dest %>%
-  dplyr::left_join(bk_census_tracts_borders, c("w_census_tract" = "CT2010")) %>%
+  dplyr::left_join(bk_nta_borders, c("w_nta_code" = "NTACode")) %>%
   sf::st_as_sf()
-
-tmap::tm_shape(bk_census_tracts_borders) +
-  tmap::tm_polygons()
 
 tmap::tm_shape(bk_dest_borders) +
   tmap::tm_polygons(
@@ -74,16 +72,16 @@ tmap::tm_shape(bk_dest_borders) +
 
 ### Moran's I Test: GLOBAL
 ```{r, message=FALSE}
-bkTractNeighbors <- bk_dest_borders %>%
-  spdep::poly2nb(c("cartodb_id")) %>%
+bk_nta_neighbor_weights <- bk_dest_borders %>%
+  spdep::poly2nb(c("w_nta_code")) %>%
   spdep::nb2listw(zero.policy = TRUE)
 
-bkGlobalMoran <- bkTractNeighbors %>%
+bk_global_moran <- bk_nta_neighbor_weights %>%
   spdep::moran.test(bk_dest_borders$S000, ., zero.policy = TRUE)
 
 spdep::moran.plot(
   bk_dest_borders$S000,
-  bkTractNeighbors,
+  bk_nta_neighbor_weights,
   zero.policy = TRUE,
   xlab = "Job count",
   ylab = "Lagged job count",
@@ -95,7 +93,7 @@ spdep::moran.plot(
 ```{r, message=FALSE}
 bk_lisa <- spdep::localmoran(
   bk_dest_borders$S000,
-  bkTractNeighbors,
+  bk_nta_neighbor_weights,
   zero.policy = TRUE,
   na.action = na.omit,
 )
@@ -137,14 +135,12 @@ ggplot(bk_dest_borders) +
 ### Regression
 ```{r, message=FALSE}
 bk_od_undirected <- bk_od %>%
-  dplyr::mutate(h_census_tract = stringr::str_sub(as.character(h_geocode), 6, 11)) %>%
-  dplyr::mutate(w_census_tract = stringr::str_sub(as.character(w_geocode), 6, 11)) %>%
   ## Only trips that leave the tract
-  dplyr::filter(w_census_tract != h_census_tract) %>%
+  dplyr::filter(w_nta_code != h_nta_code) %>%
   dplyr::mutate(
       trip = stringr::str_c(
-        ifelse(w_census_tract < h_census_tract, w_census_tract, h_census_tract),
-        ifelse(w_census_tract > h_census_tract, w_census_tract, h_census_tract)
+        ifelse(w_nta_code < h_nta_code, w_nta_code, h_nta_code),
+        ifelse(w_nta_code > h_nta_code, w_nta_code, h_nta_code)
       )
     ) %>%
   dplyr::group_by(trip) %>%
@@ -156,34 +152,30 @@ bk_od_undirected <- bk_od %>%
 ``` 
  
 ```{r, message=FALSE}
-## bk_dest : in
-## bk_tract_neighbors : in
-## bk_tract_neighbors_map: intermediar
-## bk_dest_neighbors: out
-bk_tract_neighbors <- bk_dest_borders %>%
-  spdep::poly2nb(c("cartodb_id"))
+bk_nta_neighbors <- bk_dest_borders %>%
+  spdep::poly2nb(c("w_nta_code"))
   
-bk_tract_neighbors_map <- vector(mode = "list", length = length(bk_dest$w_census_tract))
-for (i in 1:length(bk_tract_neighbors_map)) {
-  neighbor_positions <- bk_tract_neighbors[[i]]
+bk_nta_neighbors_map <- vector(mode = "list", length = length(bk_dest$w_nta_code))
+for (i in 1:length(bk_nta_neighbors_map)) {
+  neighbor_positions <- bk_nta_neighbors[[i]]
   neighbors <- vector(length = length(neighbor_positions))
   for(j in 1:length(neighbors)) {
-    ## neighbors[j] <- bk_tract_neighbors[[neighbor_positions[j]]]
-    neighbors[j] <- bk_dest$w_census_tract[neighbor_positions[[j]]]
+    neighbors[j] <- bk_dest$w_nta_code[neighbor_positions[[j]]]
   }
-  bk_tract_neighbors_map[[i]] <- neighbors
+  bk_nta_neighbors_map[[i]] <- neighbors
 }
 
 bk_dest_neighbors <- tibble::tibble(
-  census_tract = bk_dest$w_census_tract,
-  tibble::as_tibble_col(bk_tract_neighbors_map, column_name = "neighbors"),
+  nta_code = bk_dest$w_nta_code,
+  neighbors = bk_nta_neighbors_map,
 )
 
 bk_od_undirected_neighbors <- bk_od_undirected %>%
-  dplyr::mutate(census_tract_a = stringr::str_sub(trip, 1, 6)) %>%
-  dplyr::mutate(census_tract_b = stringr::str_sub(trip, 7, 12)) %>%
-  dplyr::left_join(bk_dest_neighbors, c("census_tract_a" = "census_tract")) %>%
-  dplyr::mutate(are_neighbors = ifelse(census_tract_b %in% unlist(neighbors), 1, 0))
+  dplyr::mutate(nta_code_a = stringr::str_sub(trip, 1, 4)) %>%
+  dplyr::mutate(nta_code_b = stringr::str_sub(trip, 5, 8)) %>%
+  dplyr::left_join(bk_dest_neighbors, c("nta_code_a" = "nta_code")) %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(are_neighbors = ifelse(nta_code_b %in% neighbors, 1, 0))
 
 sum(bk_od_undirected_neighbors$are_neighbors)
 
