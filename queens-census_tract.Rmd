@@ -1,0 +1,172 @@
+# Auto-correlation and regression for Queen's contiguity at census tract resolution
+
+```{r, message = FALSE}
+library(sf)
+library(tidyverse)
+library(tmap)
+library(spdep)
+options(scipen = 999)
+```
+
+```{r, message = FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_census_tracts_borders <- sf::st_read('./data/nyc_2010_census_tract_borders.geojson') %>%
+  dplyr::filter(BoroName == bk_name) %>%
+  dplyr::select("CT2010", "Shape__Area", "Shape__Length", "geometry")
+
+bk_od <- readr::read_csv("./data/ny_od_main_JT00_2019.csv") %>%
+  dplyr::filter(
+      str_sub(as.character(w_geocode), 3, 5) == bk_county_code &
+      str_sub(as.character(h_geocode), 3, 5) == bk_county_code
+  )
+```
+```{r, message=FALSE}
+bk_dest <- bk_od %>%
+  dplyr::mutate(
+    w_census_tract = stringr::str_sub(as.character(w_geocode), 6, 11)
+    ) %>%
+  dplyr::group_by(w_census_tract) %>%
+  dplyr::summarise(
+    S000 = sum(S000)
+  ) %>%
+  unique()
+
+bk_dest_borders <- bk_dest %>%
+  dplyr::left_join(bk_census_tracts_borders, c("w_census_tract" = "CT2010")) %>%
+  sf::st_as_sf()
+
+tmap::tm_shape(bk_census_tracts_borders) +
+  tmap::tm_polygons()
+
+tmap::tm_shape(bk_dest_borders) +
+  tmap::tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Count"
+  ) + tmap::tm_layout(
+    title = "Jobs in each tract",
+    legend.outside = TRUE
+  )
+```
+
+### Moran's I Test: GLOBAL
+```{r, message=FALSE}
+bkTractNeighbors <- bk_dest_borders %>%
+  spdep::poly2nb(c("cartodb_id")) %>%
+  spdep::nb2listw(zero.policy = TRUE)
+
+bkGlobalMoran <- bkTractNeighbors %>%
+  spdep::moran.test(bk_dest_borders$S000, ., zero.policy = TRUE)
+
+spdep::moran.plot(
+  bk_dest_borders$S000,
+  bkTractNeighbors,
+  zero.policy = TRUE,
+  xlab = "Job count",
+  ylab = "Lagged job count",
+  pch = 20,
+)
+```
+
+### Local indicators of spatial autocorrelation
+```{r, message=FALSE}
+bk_lisa <- spdep::localmoran(
+  bk_dest_borders$S000,
+  bkTractNeighbors,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+avg_jobs <- mean(bk_dest_borders$S000)
+
+bk_lisa_classes <- bk_lisa %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & bk_dest_borders$S000 >= avg_jobs ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & bk_dest_borders$S000 <  avg_jobs ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & bk_dest_borders$S000 >= avg_jobs ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & bk_dest_borders$S000 < avg_jobs ~ "LH"
+    )
+  )
+
+bk_dest_borders$coType <- bk_lisa_classes$coType %>% tidyr::replace_na("Insignificant")
+
+ggplot(bk_dest_borders) +
+  geom_sf(aes(
+    fill=coType
+  ),
+  color = 'lightgrey'
+  ) +
+  scale_fill_manual(
+    values = c("red", "NA","blue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Job count at census tract level"
+  )
+```
+### Regression
+```{r, message=FALSE}
+bk_od_undirected <- bk_od %>%
+  dplyr::mutate(h_census_tract = stringr::str_sub(as.character(h_geocode), 6, 11)) %>%
+  dplyr::mutate(w_census_tract = stringr::str_sub(as.character(w_geocode), 6, 11)) %>%
+  ## Only trips that leave the tract
+  dplyr::filter(w_census_tract != h_census_tract) %>%
+  dplyr::mutate(
+      trip = stringr::str_c(
+        ifelse(w_census_tract < h_census_tract, w_census_tract, h_census_tract),
+        ifelse(w_census_tract > h_census_tract, w_census_tract, h_census_tract)
+      )
+    ) %>%
+  dplyr::group_by(trip) %>%
+  dplyr::summarise(
+    S000 = sum(S000)
+  ) %>%
+  unique()
+
+``` 
+ 
+```{r, message=FALSE}
+## bk_dest : in
+## bk_tract_neighbors : in
+## bk_tract_neighbors_map: intermediar
+## bk_dest_neighbors: out
+bk_tract_neighbors <- bk_dest_borders %>%
+  spdep::poly2nb(c("cartodb_id"))
+  
+bk_tract_neighbors_map <- vector(mode = "list", length = length(bk_dest$w_census_tract))
+for (i in 1:length(bk_tract_neighbors_map)) {
+  neighbor_positions <- bk_tract_neighbors[[i]]
+  neighbors <- vector(length = length(neighbor_positions))
+  for(j in 1:length(neighbors)) {
+    ## neighbors[j] <- bk_tract_neighbors[[neighbor_positions[j]]]
+    neighbors[j] <- bk_dest$w_census_tract[neighbor_positions[[j]]]
+  }
+  bk_tract_neighbors_map[[i]] <- neighbors
+}
+
+bk_dest_neighbors <- tibble::tibble(
+  census_tract = bk_dest$w_census_tract,
+  tibble::as_tibble_col(bk_tract_neighbors_map, column_name = "neighbors"),
+)
+
+bk_od_undirected_neighbors <- bk_od_undirected %>%
+  dplyr::mutate(census_tract_a = stringr::str_sub(trip, 1, 6)) %>%
+  dplyr::mutate(census_tract_b = stringr::str_sub(trip, 7, 12)) %>%
+  dplyr::left_join(bk_dest_neighbors, c("census_tract_a" = "census_tract")) %>%
+  dplyr::mutate(are_neighbors = ifelse(census_tract_b %in% unlist(neighbors), 1, 0))
+
+sum(bk_od_undirected_neighbors$are_neighbors)
+
+queen_neighbor_model <- lm(S000 ~ are_neighbors, data = bk_od_undirected_neighbors)
+plot(queen_neighbor_model)
+summary(queen_neighbor_model)
+```
+
