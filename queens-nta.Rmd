@@ -70,7 +70,7 @@ tmap::tm_shape(bk_dest_borders) +
   )
 ```
 
-### Moran's I Test: GLOBAL
+### Moran's I Test: Global analysis
 ```{r, message=FALSE}
 bk_nta_neighbor_weights <- bk_dest_borders %>%
   spdep::poly2nb(c("w_nta_code")) %>%
@@ -129,9 +129,10 @@ ggplot(bk_dest_borders) +
     name = "Clusters & \nOutliers"
   ) +
   labs(
-    title = "Job count at census tract level"
+    title = "Job count at nta level"
   )
 ```
+
 ### Regression
 ```{r, message=FALSE}
 bk_od_undirected <- bk_od %>%
