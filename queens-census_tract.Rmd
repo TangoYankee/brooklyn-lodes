@@ -138,8 +138,9 @@ bk_od_undirected <- bk_od %>%
 ## bk_tract_neighbors : in
 ## bk_tract_neighbors_map: intermediar
 ## bk_dest_neighbors: out
+## TODO: check on list for nb list. Was cartodbid
 bk_tract_neighbors <- bk_dest_borders %>%
-  spdep::poly2nb(c("cartodb_id"))
+  spdep::poly2nb(c("w_census_tract"))
   
 bk_tract_neighbors_map <- vector(mode = "list", length = length(bk_dest$w_census_tract))
 for (i in 1:length(bk_tract_neighbors_map)) {
