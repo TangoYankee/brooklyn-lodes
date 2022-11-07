@@ -79,6 +79,10 @@ bk_nta_neighbor_weights <- bk_dest_borders %>%
 bk_global_moran <- bk_nta_neighbor_weights %>%
   spdep::moran.test(bk_dest_borders$S000, ., zero.policy = TRUE)
 
+bk_global_moran
+```
+
+```{r, message=FALSE}
 spdep::moran.plot(
   bk_dest_borders$S000,
   bk_nta_neighbor_weights,

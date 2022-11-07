@@ -242,7 +242,19 @@ tmap::tm_shape(bk_dest_borders) +
 bk_global_moran &lt;- bk_nta_neighbor_weights %&gt;%
   spdep::moran.test(bk_dest_borders$S000, ., zero.policy = TRUE)
 
-spdep::moran.plot(
+bk_global_moran</code></pre>
+<pre><code>## 
+##  Moran I test under randomisation
+## 
+## data:  bk_dest_borders$S000  
+## weights: .    
+## 
+## Moran I statistic standard deviate = 0.75107, p-value = 0.2263
+## alternative hypothesis: greater
+## sample estimates:
+## Moran I statistic       Expectation          Variance 
+##       0.041653760      -0.020408163       0.006827854</code></pre>
+<pre class="r"><code>spdep::moran.plot(
   bk_dest_borders$S000,
   bk_nta_neighbor_weights,
   zero.policy = TRUE,
