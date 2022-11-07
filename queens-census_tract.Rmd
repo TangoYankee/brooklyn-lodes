@@ -59,6 +59,11 @@ bkTractNeighbors <- bk_dest_borders %>%
 bkGlobalMoran <- bkTractNeighbors %>%
   spdep::moran.test(bk_dest_borders$S000, ., zero.policy = TRUE)
 
+bkGlobalMoran
+```
+
+
+```{r, message = FALSE}
 spdep::moran.plot(
   bk_dest_borders$S000,
   bkTractNeighbors,
