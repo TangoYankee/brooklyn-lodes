@@ -1,0 +1,17 @@
+```{r, message=FALSE}
+library(osrm)
+library(stplanr)
+
+trip <- stplanr::route(
+  from = c(-0.11, 51.514),
+  to = c(-0.10, 51.506),
+  route_fun = osrm::osrmRoute,
+)
+
+trip_two <- osrm::osrmRoute(
+  src = c(-0.11, 51.514),
+  dst = c(-0.10, 51.506),
+  overview = "simplified",
+)
+```
+

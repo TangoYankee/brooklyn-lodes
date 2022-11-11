@@ -1,0 +1,35 @@
+## 
+```{r, message = FALSE}
+library(sf)
+library(tidyverse)
+library(tmap)
+library(spdep)
+options(scipen = 999)
+```
+
+```{r, message = FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_parks <- "BK99"
+
+bk_nta_borders <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
+  dplyr::filter(BoroName == bk_name)  %>%
+  dplyr::filter(NTACode != bk_parks) %>%
+  dplyr::select("NTACode", "Shape__Area", "Shape__Length", "geometry")
+
+bk_nta_centers <- bk_nta_borders %>%
+  select("NTACode") %>%
+  mutate(geometry = sf::st_point_on_surface(geometry))
+
+tmap::tm_shape(bk_nta_borders) +
+  tmap::tm_polygons() +
+  tmap::tm_shape(bk_nta_centers) +
+  tmap::tm_dots()
+```
+
+```{r, message=FALSE}
+bk_nta_centers$geometry[1]
+```
+```{r, message=FALSE}
+bk_nta_centers$geometry[2]
+```
