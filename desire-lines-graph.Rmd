@@ -19,8 +19,8 @@ nta_trip_nodes <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
   select("NTACode") %>%
   mutate(geometry = sf::st_point_on_surface(geometry))
 
-nta_trip_edges <- tibble::tibble(from = nta_trips$nta_code_one, to = nta_trips$nta_code_two)
-nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges)
+nta_trip_edges <- tibble::tibble(from = nta_trips$nta_code_one, to = nta_trips$nta_code_two, weight = nta_trips$S000)
+nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges, node_key = 'name')
 ```
 
 ```{r, message=FALSE}
