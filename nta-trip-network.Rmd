@@ -1,0 +1,102 @@
+## 
+```{r, message = FALSE}
+library(sf)
+library(tidyverse)
+library(tmap)
+library(spdep)
+options(scipen = 999)
+```
+```{r, message=FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_parks <- "BK99"
+bk_od_tract <- readr::read_csv("./data/ny_od_main_JT00_2019.csv") %>%
+  dplyr::filter(
+      stringr::str_sub(as.character(w_geocode), 3, 5) == bk_county_code &
+      stringr::str_sub(as.character(h_geocode), 3, 5) == bk_county_code
+  ) %>%
+  dplyr::mutate(
+   w_tract = stringr::str_sub(as.character(w_geocode), 6, 11)
+  ) %>%
+  dplyr::mutate(
+   h_tract = stringr::str_sub(as.character(h_geocode), 6, 11)
+  ) %>%
+  dplyr::select("w_tract", "h_tract", "S000")
+
+bk_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
+  dplyr::filter(borough_name == bk_name) %>%
+  dplyr::filter(nta_code != bk_parks) %>%
+  dplyr::rename(tract = census_tract) %>%
+  dplyr::select("tract", "nta_code")
+
+bk_od <- bk_od_tract %>%
+  dplyr::left_join(bk_tract_nta_equiv, c("w_tract" = "tract")) %>%
+  dplyr::rename(w_nta_code = nta_code) %>%
+  dplyr::left_join(bk_tract_nta_equiv, c("h_tract" = "tract")) %>%
+  dplyr::rename(h_nta_code = nta_code) %>%
+  dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
+  dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks)
+```
+
+```{r, message = FALSE}
+
+bk_nta_borders <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
+  dplyr::filter(BoroName == bk_name)  %>%
+  dplyr::filter(NTACode != bk_parks) %>%
+  dplyr::select("NTACode", "Shape__Area", "Shape__Length", "geometry")
+
+bk_nta_centers <- bk_nta_borders %>%
+  select("NTACode") %>%
+  mutate(geometry = sf::st_point_on_surface(geometry))
+
+tmap::tm_shape(bk_nta_borders) +
+  tmap::tm_polygons() +
+  tmap::tm_shape(bk_nta_centers) +
+  tmap::tm_dots()
+```
+
+```{r, message=FALSE}
+bk_nta_centers$geometry[1]
+```
+```{r, message=FALSE}
+bk_nta_centers$geometry[2]
+```
+
+```{r, message=FALSE}
+bk_od_undirected <- bk_od %>%
+  ## Only trips that leave the nta
+  dplyr::filter(w_nta_code != h_nta_code) %>%
+  dplyr::mutate(
+      trip = stringr::str_c(
+        ifelse(w_nta_code < h_nta_code, w_nta_code, h_nta_code),
+        ifelse(w_nta_code > h_nta_code, w_nta_code, h_nta_code)
+      )
+    ) %>%
+  dplyr::group_by(trip) %>%
+  dplyr::summarise(
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  dplyr::mutate(nta_code_one = stringr::str_sub(trip, 1,4)) %>%
+  dplyr::mutate(nta_code_two = stringr::str_sub(trip, 5,8))
+
+bk_od_undirected_centers <- bk_od_undirected %>%
+  dplyr::left_join(bk_nta_centers, c("nta_code_one" = "NTACode")) %>%
+  sf::st_as_sf() %>%
+  dplyr::mutate(
+    long_one = sf::st_coordinates(.)[,1],
+    lat_one = sf::st_coordinates(.)[,2]
+  ) %>%
+  sf::st_set_geometry(NULL) %>%
+  dplyr::left_join(bk_nta_centers, c("nta_code_two" = "NTACode")) %>%
+  sf::st_as_sf() %>%
+  dplyr::mutate(
+    long_two = sf::st_coordinates(.)[,1],
+    lat_two = sf::st_coordinates(.)[,2]
+  ) %>%
+  sf::st_set_geometry(NULL)
+```
+
+```{r, message=FALSE}
+readr::write_csv(bk_od_undirected_centers, './data/nta-trip-network.csv')
+```

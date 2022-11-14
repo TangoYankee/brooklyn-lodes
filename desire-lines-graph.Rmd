@@ -1,0 +1,28 @@
+```{r, message=FALSE}
+library(tidyverse)
+library(sf)
+library(sfnetworks)
+```
+```{r, message=FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_parks <- "BK99"
+```
+
+## Graph desire lines
+Places nodes and edges in data frame
+```{r, message=FALSE}
+nta_trips <- readr::read_csv('./data/nta-trip-network.csv')
+nta_trip_nodes <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
+  dplyr::filter(BoroName == bk_name)  %>%
+  dplyr::filter(NTACode != bk_parks) %>%
+  select("NTACode") %>%
+  mutate(geometry = sf::st_point_on_surface(geometry))
+
+nta_trip_edges <- tibble::tibble(from = nta_trips$nta_code_one, to = nta_trips$nta_code_two)
+nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges)
+```
+
+```{r, message=FALSE}
+plot(nta_trip_graph)
+```
