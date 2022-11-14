@@ -1,0 +1,48 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r, message=FALSE}
+library(tidyverse)
+library(tidygraph)
+```
+
+Define each node as a trip 
+```{r, message=FALSE}
+nta_trips <- readr::read_csv('./data/nta-trip-network.csv')
+nta_trip_nodes <- tibble::tibble(name = nta_trips$trip)
+```
+
+Define each edge as a shared NTA between two trips
+```{r, message=FALSE}
+edges_from <- vector()
+edges_to <- vector()
+nodes <- nta_trip_nodes$name
+nodes_count <- length(nodes)
+for(i in 1:(nodes_count - 1)) {
+  offset <- i + 1
+  from_node <- nodes[i]
+  from_nta_one <- stringr::str_sub(from_node, 1, 4)
+  from_nta_two <- stringr::str_sub(from_node, 5, 8)
+  for(j in offset:nodes_count){
+    to_node <- nodes[j]
+    are_neighbors <- stringr::str_detect(to_node, from_nta_one) | stringr::str_detect(to_node, from_nta_two)
+    if (are_neighbors) {
+      edges_from <- append(edges_from, from_node)
+      edges_to <- append(edges_to, to_node)
+    }
+  }
+}
+```
+
+Construct the graph
+```{r, message=FALSE}
+nta_trip_edges <- tibble::tibble(from = edges_from, to = edges_to)
+nta_trip_network <- tidygraph::tbl_graph(nodes = nta_trip_nodes, edges = nta_trip_edges)
+```
+
+Plot the graph
+```{r, message=FALSE}
+plot(nta_trip_network)
+```
