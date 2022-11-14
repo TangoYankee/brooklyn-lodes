@@ -1,8 +1,15 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 ```{r, message=FALSE}
 library(tidyverse)
+library(ggraph)
 library(sf)
 library(sfnetworks)
 ```
+
 ```{r, message=FALSE}
 bk_name <- "Brooklyn"
 bk_county_code <- "047"
@@ -20,9 +27,42 @@ nta_trip_nodes <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
   mutate(geometry = sf::st_point_on_surface(geometry))
 
 nta_trip_edges <- tibble::tibble(from = nta_trips$nta_code_one, to = nta_trips$nta_code_two, weight = nta_trips$S000)
-nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges, node_key = 'name')
+nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges, node_key = 'NTACODE')
 ```
 
 ```{r, message=FALSE}
-plot(nta_trip_graph)
+ggraph::ggraph(nta_trip_graph, layout="stress") +
+  geom_edge_link() +
+  geom_node_circle(aes(r = 0.01), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_sub(NTACode, 3,4)), repel = TRUE)
+```
+
+## Subgraph 
+
+### Random Sample
+```{r, message=FALSE}
+nta_trip_edges_rand <- nta_trip_edges %>%
+  dplyr::slice_sample(n = 50)
+nta_trip_graph_rand <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges_rand, node_key = 'NTACode')
+```
+
+```{r, message=FALSE}
+ggraph::ggraph(nta_trip_graph_rand, layout="kk") +
+  geom_edge_link(mapping = aes(edge_width = weight)) +
+  geom_node_circle(aes(r = 0.1), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_sub(NTACode, 3,4)), repel = TRUE)
+```
+
+### Most popular commutes
+```{r, message=FALSE}
+nta_trip_edges_top <- nta_trip_edges %>%
+  dplyr::slice_max(order_by = weight, n = 50)
+nta_trip_graph_top <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges_top, node_key = 'NTACode')
+```
+
+```{r, message=FALSE}
+ggraph::ggraph(nta_trip_graph_top, layout="kk") +
+  geom_edge_link(mapping = aes(edge_width = weight)) +
+  geom_node_circle(aes(r = 0.2), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_sub(NTACode, 3,4)), repel = TRUE)
 ```

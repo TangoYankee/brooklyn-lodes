@@ -6,12 +6,13 @@ output:
 ```{r, message=FALSE}
 library(tidyverse)
 library(tidygraph)
+library(ggraph)
 ```
 
 Define each node as a trip 
 ```{r, message=FALSE}
 nta_trips <- readr::read_csv('./data/nta-trip-network.csv')
-nta_trip_nodes <- tibble::tibble(name = nta_trips$trip)
+nta_trip_nodes <- tibble::tibble(name = nta_trips$trip, trip_count = nta_trips$S000)
 ```
 
 Define each edge as a shared NTA between two trips
@@ -45,18 +46,33 @@ nta_trip_edges <- build_edges(nta_trip_nodes$name)
 nta_trip_network <- tidygraph::tbl_graph(nodes = nta_trip_nodes, edges = nta_trip_edges)
 ```
 
-Plot the graph
-```{r, message=FALSE}
-plot(nta_trip_network)
-```
-
 ## Subgraph
 Use a sub section of the network to make it easier to visualize
-```{r, message=FALSE}
-nta_trip_nodes_sub <- nta_trip_nodes %>%
-  dplyr::slice_sample(n = 50)
-nta_trip_edges_sub <- build_edges(nta_trip_nodes_sub$name)
-nta_trip_network_sub <- tidygraph::tbl_graph(nodes = nta_trip_nodes_sub, edges = nta_trip_edges_sub)
 
-plot(nta_trip_network_sub)
+### Random sample
+```{r, message=FALSE}
+nta_trip_nodes_rand <- nta_trip_nodes %>%
+  dplyr::slice_sample(n = 50)
+nta_trip_edges_rand <- build_edges(nta_trip_nodes_rand$name)
+nta_trip_network_rand <- tidygraph::tbl_graph(nodes = nta_trip_nodes_rand, edges = nta_trip_edges_rand)
+
+total_trips_rand <- sum(nta_trip_nodes_rand$trip_count)
+ggraph::ggraph(nta_trip_network_rand, layout="stress") +
+  geom_edge_link() +
+  geom_node_circle(aes(r = (nta_trip_nodes_rand$trip_count / total_trips_rand)), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
+```
+
+### Most popular trips
+```{r, message=FALSE}
+nta_trip_nodes_top <- nta_trip_nodes %>%
+  dplyr::slice_max(order_by = trip_count, n = 50)
+nta_trip_edges_top <- build_edges(nta_trip_nodes_top$name)
+nta_trip_network_top <- tidygraph::tbl_graph(nodes = nta_trip_nodes_top, edges = nta_trip_edges_top)
+
+total_trips_top <- sum(nta_trip_nodes_top$trip_count)
+ggraph::ggraph(nta_trip_network_top, layout="stress") +
+  geom_edge_link() +
+  geom_node_circle(aes(r = (nta_trip_nodes_top$trip_count / total_trips_top)), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
 ```

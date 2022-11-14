@@ -75,6 +75,16 @@
       "Hash": "e9c08b94391e9f3f97355841229124f2",
       "Requirements": []
     },
+    "RcppArmadillo": {
+      "Package": "RcppArmadillo",
+      "Version": "0.11.4.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5fa867879a70ed6df6ae4ed7f392fba2",
+      "Requirements": [
+        "Rcpp"
+      ]
+    },
     "RcppEigen": {
       "Package": "RcppEigen",
       "Version": "0.3.3.9.3",
@@ -566,6 +576,30 @@
         "Rcpp"
       ]
     },
+    "ggforce": {
+      "Package": "ggforce",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a06503f54e227f79b45a72df2946a2d2",
+      "Requirements": [
+        "MASS",
+        "Rcpp",
+        "RcppEigen",
+        "cli",
+        "ggplot2",
+        "gtable",
+        "lifecycle",
+        "polyclip",
+        "rlang",
+        "scales",
+        "systemfonts",
+        "tidyselect",
+        "tweenr",
+        "vctrs",
+        "withr"
+      ]
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.4.0",
@@ -585,6 +619,46 @@
         "tibble",
         "vctrs",
         "withr"
+      ]
+    },
+    "ggraph": {
+      "Package": "ggraph",
+      "Version": "2.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "62672fd99df5df5814f442e9cd5ec29b",
+      "Requirements": [
+        "MASS",
+        "Rcpp",
+        "cli",
+        "digest",
+        "dplyr",
+        "ggforce",
+        "ggplot2",
+        "ggrepel",
+        "graphlayouts",
+        "gtable",
+        "igraph",
+        "lifecycle",
+        "rlang",
+        "scales",
+        "tidygraph",
+        "vctrs",
+        "viridis",
+        "withr"
+      ]
+    },
+    "ggrepel": {
+      "Package": "ggrepel",
+      "Version": "0.9.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "610af35a68a1e8a40f05aad45871e719",
+      "Requirements": [
+        "Rcpp",
+        "ggplot2",
+        "rlang",
+        "scales"
       ]
     },
     "glue": {
@@ -650,6 +724,18 @@
         "rlang",
         "tibble",
         "vctrs"
+      ]
+    },
+    "graphlayouts": {
+      "Package": "graphlayouts",
+      "Version": "0.8.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "cd384a3c21f72b24ae42ffb322bf6b16",
+      "Requirements": [
+        "Rcpp",
+        "RcppArmadillo",
+        "igraph"
       ]
     },
     "gridExtra": {
@@ -1129,6 +1215,14 @@
       "Hash": "03b7076c234cb3331288919983326c55",
       "Requirements": []
     },
+    "polyclip": {
+      "Package": "polyclip",
+      "Version": "1.10-4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "66bbfa06f78108ee967220643596c91e",
+      "Requirements": []
+    },
     "prettyunits": {
       "Package": "prettyunits",
       "Version": "1.1.1",
@@ -1550,6 +1644,16 @@
       "Hash": "34c16f1ef796057bfa06d3f4ff818a5d",
       "Requirements": []
     },
+    "systemfonts": {
+      "Package": "systemfonts",
+      "Version": "1.0.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "90b28393209827327de889f49935140a",
+      "Requirements": [
+        "cpp11"
+      ]
+    },
     "terra": {
       "Package": "terra",
       "Version": "1.6-17",
@@ -1718,6 +1822,20 @@
         "stars",
         "units",
         "viridisLite"
+      ]
+    },
+    "tweenr": {
+      "Package": "tweenr",
+      "Version": "2.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c16efcef4c72d3bff5e65031f3f1f841",
+      "Requirements": [
+        "cpp11",
+        "farver",
+        "magrittr",
+        "rlang",
+        "vctrs"
       ]
     },
     "tzdb": {
