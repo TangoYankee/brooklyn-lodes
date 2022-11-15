@@ -3,6 +3,19 @@ output:
   pdf_document: default
   html_document: default
 ---
+# Network auto-correlation for desire lines between NTAs in Brooklyn
+
+Building off the network of the desire-lines from the previous section, the graph
+is transformed to describe the relationship between the desire lines. After this transformation,
+a node is defined as a trip. The nodes are named for the two NTAs that are part of
+the trip. Because the base graph is undirected, the order of the codes in the trip
+name are not related to the direction of the trips.
+An edge exists between two trips if the trips have an
+NTA in common. This graph is also undirected.
+
+Network auto-correlation is performed with the graph in this form. The value of
+each node is the number of commutes that are made along that trip. 
+
 ```{r, message=FALSE}
 library(tidyverse)
 library(tidygraph)
@@ -12,13 +25,13 @@ library(spdep)
 library(igraph)
 ```
 
-Define each node as a trip 
+Define each trip as a node
 ```{r, message=FALSE}
 nta_trips <- readr::read_csv('./data/nta-trip-network.csv')
 nta_trip_nodes <- tibble::tibble(name = nta_trips$trip, trip_count = nta_trips$S000)
 ```
 
-Define each edge as a shared NTA between two trips
+Define a utility function that builds the edges between trips
 ```{r, message=FALSE}
 build_edges <- function(nodes){
   edges_from <- vector()
@@ -40,7 +53,6 @@ build_edges <- function(nodes){
   }
   return (tibble::tibble(from = edges_from, to = edges_to))
 }
-
 ```
 
 Construct the graph
@@ -53,6 +65,7 @@ nta_trip_network <- tidygraph::tbl_graph(nodes = nta_trip_nodes, edges = nta_tri
 Use a sub section of the network to make it easier to visualize
 
 ### Random sample
+Construct a subgraph with a random sample of nodes
 ```{r, message=FALSE}
 nta_trip_nodes_rand <- nta_trip_nodes %>%
   dplyr::slice_sample(n = 50)
@@ -67,6 +80,7 @@ ggraph::ggraph(nta_trip_network_rand, layout="stress") +
 ```
 
 ### Most popular trips
+Construct a subgraph using the nodes with the top 50 trip counts
 ```{r, message=FALSE}
 nta_trip_nodes_top <- nta_trip_nodes %>%
   dplyr::slice_max(order_by = trip_count, n = 50)
@@ -81,6 +95,7 @@ ggraph::ggraph(nta_trip_network_top, layout="stress") +
 ```
 
 ## Global Moran's I
+Calculate the total Global Moran's I for the whole network.
 ```{r, message=FALSE}
 nta_trip_network_weights <- nta_trip_network %>%
   igraph::as_adj() %>%
@@ -89,6 +104,7 @@ nta_trip_network_weights <- nta_trip_network %>%
 global_morans <- spdep::moran.test(nta_trip_nodes$trip_count, nta_trip_network_weights, zero.policy = TRUE)
 global_morans  
 ```
+Plot the Global Moran's I
 ```{r, message=FALSE}
 spdep::moran.plot(
   nta_trip_nodes$trip_count,
@@ -133,7 +149,10 @@ nta_trip_network_cluster <- nta_trip_network %>%
 
 nta_sig <- nta_trip_network_cluster %>%
   dplyr::filter(coType != "Insignificant")
+```
 
+Visualize the confidence type for significant nodes
+```{r, message=FALSE}
 ggraph::ggraph(nta_sig, layout="stress") +
   ggraph::geom_node_circle(aes(r = 0.025, color = coType))
 

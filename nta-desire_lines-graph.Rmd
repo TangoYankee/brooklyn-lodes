@@ -3,6 +3,23 @@ output:
   pdf_document: default
   html_document: default
 ---
+# Visualization of desire line network between NTAs
+
+This notebook provides a reference visualization for a network of desire lines.
+The nodes are the NTAs. They are labeled with the numeric portion of the NTA code.
+The edges are the trips between them. The edges are weighted based on the number
+of trips between the two NTAs. The graph is undirected. Consequently, a trip
+in either direction is counted towards the weight for the edge. If there are no
+trips between two NTAs, then they do not share an edge.
+
+There is no statistical test performed on the network in this form. Instead, it
+serves as foundation for the next step of analysis.
+
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 ```{r, message=FALSE}
 library(tidyverse)
 library(ggraph)
@@ -17,6 +34,9 @@ bk_parks <- "BK99"
 ```
 
 ## Graph desire lines
+Construct the graph of all desire lines between all Brooklyn NTAs
+
+
 Places nodes and edges in data frame
 ```{r, message=FALSE}
 nta_trips <- readr::read_csv('./data/nta-trip-network.csv')
@@ -30,6 +50,7 @@ nta_trip_edges <- tibble::tibble(from = nta_trips$nta_code_one, to = nta_trips$n
 nta_trip_graph <- sfnetworks::sfnetwork(nodes = nta_trip_nodes, edges = nta_trip_edges, node_key = 'NTACODE')
 ```
 
+Visualize the graph
 ```{r, message=FALSE}
 ggraph::ggraph(nta_trip_graph, layout="stress") +
   geom_edge_link() +
@@ -38,8 +59,11 @@ ggraph::ggraph(nta_trip_graph, layout="stress") +
 ```
 
 ## Subgraph 
+The full graph is staturated with data. Here, I present subsections of the edges
+to help visualize the structure of the full graph.
 
 ### Random Sample
+A random sampling of edges 
 ```{r, message=FALSE}
 nta_trip_edges_rand <- nta_trip_edges %>%
   dplyr::slice_sample(n = 50)
@@ -54,6 +78,7 @@ ggraph::ggraph(nta_trip_graph_rand, layout="kk") +
 ```
 
 ### Most popular commutes
+A sampling of the edges with the top 50 number of commutes
 ```{r, message=FALSE}
 nta_trip_edges_top <- nta_trip_edges %>%
   dplyr::slice_max(order_by = weight, n = 50)
