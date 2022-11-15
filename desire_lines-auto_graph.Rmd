@@ -7,6 +7,9 @@ output:
 library(tidyverse)
 library(tidygraph)
 library(ggraph)
+library(spData)
+library(spdep)
+library(igraph)
 ```
 
 Define each node as a trip 
@@ -75,4 +78,47 @@ ggraph::ggraph(nta_trip_network_top, layout="stress") +
   geom_edge_link() +
   geom_node_circle(aes(r = (nta_trip_nodes_top$trip_count / total_trips_top)), fill = "blue") +
   geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
+```
+
+## Global Moran's I
+```{r, message=FALSE}
+nta_trip_network_weights <- nta_trip_network %>%
+  igraph::as_adj() %>%
+  spdep::mat2listw()
+
+global_morans <- spdep::moran.test(nta_trip_nodes$trip_count, nta_trip_network_weights, zero.policy = TRUE)
+global_morans  
+```
+
+## Local Indicators of spatial autocorrelation
+```{r, message=FALSE}
+local_moran <- spdep::localmoran(
+  nta_trip_nodes$trip_count,
+  nta_trip_network_weights,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+avg_trip_count <- mean(nta_trip_nodes$trip_count)
+
+lisa_classes <- local_moran %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & nta_trip_nodes$trip_count >= avg_trip_count ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & nta_trip_nodes$trip_count <  avg_trip_count ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & nta_trip_nodes$trip_count >= avg_trip_count ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & nta_trip_nodes$trip_count < avg_trip_count ~ "LH"
+    )
+  )
+
+nta_trip_network_cluster <- nta_trip_network
+nta_trip_network_cluster <- nta_trip_network_cluster %>%
+  tidygraph::activate(nodes) %>%
+  dplyr::mutate(coType = lisa_classes$coType %>% tidyr::replace_na("Insignificant"))
 ```
