@@ -89,6 +89,16 @@ nta_trip_network_weights <- nta_trip_network %>%
 global_morans <- spdep::moran.test(nta_trip_nodes$trip_count, nta_trip_network_weights, zero.policy = TRUE)
 global_morans  
 ```
+```{r, message=FALSE}
+spdep::moran.plot(
+  nta_trip_nodes$trip_count,
+  nta_trip_network_weights,
+  zero.policy = TRUE,
+  xlab = "trip count",
+  ylab = "lagged trip count",
+  pch = 20,
+)
+```
 
 ## Local Indicators of spatial autocorrelation
 ```{r, message=FALSE}
@@ -117,8 +127,14 @@ lisa_classes <- local_moran %>%
     )
   )
 
-nta_trip_network_cluster <- nta_trip_network
-nta_trip_network_cluster <- nta_trip_network_cluster %>%
+nta_trip_network_cluster <- nta_trip_network %>%
   tidygraph::activate(nodes) %>%
   dplyr::mutate(coType = lisa_classes$coType %>% tidyr::replace_na("Insignificant"))
+
+nta_sig <- nta_trip_network_cluster %>%
+  dplyr::filter(coType != "Insignificant")
+
+ggraph::ggraph(nta_sig, layout="stress") +
+  ggraph::geom_node_circle(aes(r = 0.025, color = coType))
+
 ```
