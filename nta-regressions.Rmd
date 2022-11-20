@@ -34,7 +34,7 @@ ggplot(data = subway, aes(x = seconds_in_transit^(1/2), y = log(S000))) +
 ```
 
 ```{r}
-ggplot(data = driving, aes(x = 1/ seconds_in_traffic**(1/9), y = log(S000))) +
+ggplot(data = driving, aes(x = 1/ seconds_in_traffic**(1/8), y = log(S000))) +
   geom_point() +
   stat_smooth()
 ```
@@ -50,6 +50,10 @@ plot(subway_model)
 i_seconds_in_transt <- 1 / (subway$seconds_in_transit^(1 / 8))
 i_subway_model <- lm(log(subway$S000) ~ i_seconds_in_transt)
 summary(i_subway_model)
+```
+
+```{r}
+plot(i_subway_model)
 ```
 
 
