@@ -13,18 +13,39 @@ library(tidyverse)
 driving <- readr::read_csv('data/nta-driving-weights.csv')
 subway <- readr::read_csv('data/nta-subway-weights.csv')
 ```
+
+## Driving plot
+### Driving 
 ```{r}
 ggplot(data = driving, aes(x = seconds_in_traffic**(1/4), y = log(S000))) +
   geom_point() +
   stat_smooth()
 ```
+
+### Driving Inverse
+```{r}
+ggplot(data = driving, aes(x = 1 / seconds_in_traffic^(1/8), y = log(S000))) +
+  geom_point() +
+  stat_smooth()
+```
+
+## Driving model
+### Driving 
 ```{r}
 quarter_seconds <- driving$seconds_in_traffic^(1/4)
 driving_model <- lm(log(driving$S000) ~ quarter_seconds)
 summary(driving_model)
 ```
+
+### Driving inverse
 ```{r}
-plot(driving_model)
+i_quarter_seconds <- 1 /  driving$seconds_in_traffic^(1/8)
+i_driving_model <- lm(log(driving$S000) ~ i_quarter_seconds)
+summary(i_driving_model)
+```
+
+```{r}
+plot(i_driving_model)
 ```
 
 ```{r}
@@ -33,11 +54,6 @@ ggplot(data = subway, aes(x = seconds_in_transit^(1/2), y = log(S000))) +
   stat_smooth()
 ```
 
-```{r}
-ggplot(data = driving, aes(x = 1/ seconds_in_traffic**(1/8), y = log(S000))) +
-  geom_point() +
-  stat_smooth()
-```
 ```{r}
 subway_model <- lm(log(subway$S000) ~ sqrt(subway$seconds_in_transit))
 summary(subway_model)
