@@ -1,0 +1,53 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Explore the relationship between transit time and number of commutes for subways and roads
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+driving <- readr::read_csv('data/nta-driving-weights.csv')
+subway <- readr::read_csv('data/nta-subway-weights.csv')
+```
+```{r}
+ggplot(data = driving, aes(x = seconds_in_traffic**(1/4), y = log(S000))) +
+  geom_point() +
+  stat_smooth()
+```
+```{r}
+quarter_seconds <- driving$seconds_in_traffic^(1/4)
+driving_model <- lm(log(driving$S000) ~ quarter_seconds)
+summary(driving_model)
+```
+```{r}
+plot(driving_model)
+```
+
+```{r}
+ggplot(data = subway, aes(x = seconds_in_transit^(1/2), y = log(S000))) +
+  geom_point() +
+  stat_smooth()
+```
+
+```{r}
+subway_model <- lm(log(subway$S000) ~ sqrt(subway$seconds_in_transit))
+summary(subway_model)
+```
+```{r}
+plot(subway_model)
+```
+
+```{r}
+subway_and_driving_model <- lm(log(subway$S000) ~ subway$seconds_in_transit + driving$seconds_in_traffic)
+summary(subway_and_driving_model)
+```
+
+```{r}
+summary(subway$seconds_in_transit)
+
+summary(driving$seconds_in_traffic)
+```
