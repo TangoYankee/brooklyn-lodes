@@ -124,8 +124,73 @@ ggplot(bk_dest_borders) +
   labs(
     title = "Job count at nta level"
   )
+
+```
+```{r}
+igraph::V(subway_graph)
+```
+
+## Transformed
+```{r}
+t_subway_frame <- dplyr::data_frame(from = subway$nta_one, to = subway$nta_two, weight = (1 / (subway$seconds_in_transit ^ (1/8))))
+
+t_subway_graph <- igraph::graph.data.frame(t_subway_frame)
+t_subway_matrix <- igraph::as_adjacency_matrix(t_subway_graph, attr = "weight")
+t_subway_weights <- t_subway_matrix %>%
+  spdep::mat2listw()
 ```
 
 ```{r}
-igraph::V(subway_graph)
+t_subway_global_morans <- spdep::moran.test(
+  log(bk_dest_borders$S000),
+  t_subway_weights,
+  zero.policy = TRUE,
+)
+print(t_subway_global_morans)
+```
+
+```{r}
+t_bk_dest_borders <- bk_dest_borders %>%
+  dplyr::mutate(log_S000 = log(S000))
+
+t_subway_bk_lisa <- spdep::localmoran(
+  t_bk_dest_borders$log_S000,
+  t_subway_weights,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+avg_jobs <- mean(t_bk_dest_borders$log_S000)
+
+bk_lisa_classes <- t_subway_bk_lisa %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 <  avg_jobs ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 < avg_jobs ~ "LH"
+    )
+  )
+
+t_bk_dest_borders$coType <- bk_lisa_classes$coType %>% tidyr::replace_na("Insignificant")
+
+ggplot(t_bk_dest_borders) +
+  geom_sf(aes(
+    fill=coType
+  ),
+  color = 'lightgrey'
+  ) +
+  scale_fill_manual(
+    values = c("red", "pink", "NA","blue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Job count at nta level"
+  )
 ```
