@@ -1,0 +1,195 @@
+# Auto-correlation for Driving Contiguity at NTA level
+
+```{r}
+library(sf)
+library(tidyverse)
+library(tmap)
+library(spdep)
+library(igraph)
+options(scipen = 999)
+```
+
+```{r}
+driving <- readr::read_csv('data/nta-driving-weights.csv')
+```
+
+```{r}
+driving_frame <- dplyr::data_frame(from = driving$nta_one, to = driving$nta_two, weight = 1 / driving$seconds_in_traffic)
+
+driving_graph <- igraph::graph.data.frame(driving_frame)
+driving_matrix <- igraph::as_adjacency_matrix(driving_graph, attr = "weight")
+```
+
+```{r}
+driving_weights <- driving_matrix %>%
+  spdep::mat2listw()
+```
+
+```{r, message = FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_parks <- "BK99"
+
+bk_nta_borders <- sf::st_read('./data/nyc_2010_nta_borders.geojson') %>%
+  dplyr::filter(BoroName == bk_name)  %>%
+  dplyr::filter(NTACode != bk_parks) %>%
+  dplyr::select("NTACode", "Shape__Area", "Shape__Length", "geometry")
+
+bk_od_tract <- readr::read_csv("./data/ny_od_main_JT00_2019.csv") %>%
+  dplyr::filter(
+      stringr::str_sub(as.character(w_geocode), 3, 5) == bk_county_code &
+      stringr::str_sub(as.character(h_geocode), 3, 5) == bk_county_code
+  ) %>%
+  dplyr::mutate(
+   w_tract = stringr::str_sub(as.character(w_geocode), 6, 11)
+  ) %>%
+  dplyr::mutate(
+   h_tract = stringr::str_sub(as.character(h_geocode), 6, 11)
+  ) %>%
+  dplyr::select("w_tract", "h_tract", "S000")
+```
+
+```{r, message=FALSE}
+bk_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
+  dplyr::filter(borough_name == bk_name) %>%
+  dplyr::filter(nta_code != bk_parks) %>%
+  dplyr::rename(tract = census_tract) %>%
+  dplyr::select("tract", "nta_code")
+
+bk_od <- bk_od_tract %>%
+  dplyr::left_join(bk_tract_nta_equiv, c("w_tract" = "tract")) %>%
+  dplyr::rename(w_nta_code = nta_code) %>%
+  dplyr::left_join(bk_tract_nta_equiv, c("h_tract" = "tract")) %>%
+  dplyr::rename(h_nta_code = nta_code) %>%
+  dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
+  dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks)
+```
+
+```{r}
+bk_dest <- bk_od %>%
+  dplyr::group_by(w_nta_code) %>%
+  dplyr::summarise(
+    S000 = sum(S000)
+  ) %>%
+  unique()
+
+bk_dest_borders <- bk_dest %>%
+  dplyr::left_join(bk_nta_borders, c("w_nta_code" = "NTACode")) %>%
+  sf::st_as_sf()
+```
+
+```{r}
+driving_global_morans <- spdep::moran.test(bk_dest_borders$S000, driving_weights, zero.policy = TRUE)
+driving_global_morans
+```
+
+```{r}
+driving_bk_lisa <- spdep::localmoran(
+  bk_dest_borders$S000,
+  driving_weights,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+avg_jobs <- mean(bk_dest$S000)
+
+bk_lisa_classes <- driving_bk_lisa %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & bk_dest_borders$S000 >= avg_jobs ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & bk_dest_borders$S000 <  avg_jobs ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & bk_dest_borders$S000 >= avg_jobs ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & bk_dest_borders$S000 < avg_jobs ~ "LH"
+    )
+  )
+
+bk_dest_borders$coType <- bk_lisa_classes$coType %>% tidyr::replace_na("Insignificant")
+
+ggplot(bk_dest_borders) +
+  geom_sf(aes(
+    fill=coType
+  ),
+  color = 'lightgrey'
+  ) +
+  scale_fill_manual(
+    values = c("red", "NA","blue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Job count at nta level"
+  )
+```
+```{r}
+igraph::V(subway_graph)
+```
+
+## Transformed
+```{r}
+t_driving_frame <- dplyr::data_frame(from = driving$nta_one, to = driving$nta_two, weight = (1 / (driving$seconds_in_traffic ^ (1/8))))
+
+t_driving_graph <- igraph::graph.data.frame(t_driving_frame)
+t_driving_matrix <- igraph::as_adjacency_matrix(t_driving_graph, attr = "weight")
+t_driving_weights <- t_driving_matrix %>%
+  spdep::mat2listw()
+```
+
+```{r}
+t_driving_global_morans <- spdep::moran.test(
+  log(bk_dest_borders$S000),
+  t_driving_weights,
+  zero.policy = TRUE,
+)
+print(t_driving_global_morans)
+```
+
+```{r}
+t_bk_dest_borders <- bk_dest_borders %>%
+  dplyr::mutate(log_S000 = log(S000))
+
+t_driving_bk_lisa <- spdep::localmoran(
+  t_bk_dest_borders$log_S000,
+  t_driving_weights,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+avg_jobs <- mean(t_bk_dest_borders$log_S000)
+
+bk_lisa_classes <- t_driving_bk_lisa %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 <  avg_jobs ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 < avg_jobs ~ "LH"
+    )
+  )
+
+t_bk_dest_borders$coType <- bk_lisa_classes$coType %>% tidyr::replace_na("Insignificant")
+
+ggplot(t_bk_dest_borders) +
+  geom_sf(aes(
+    fill=coType
+  ),
+  color = 'lightgrey'
+  ) +
+  scale_fill_manual(
+    values = c("red", "pink", "NA","blue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Job count at nta level"
+  )
+```
