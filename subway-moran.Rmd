@@ -194,3 +194,88 @@ ggplot(t_bk_dest_borders) +
     title = "Job count at nta level"
   )
 ```
+
+## Note unnconnected 
+```{r}
+lines <- readr::read_csv('data/nta-subway-transfers.csv')
+summary(lines$line_count)
+
+subway_connected <- subway %>%
+  dplyr::left_join(lines) %>%
+  dplyr::mutate(
+    connected_seconds = ifelse(line_count > 0, seconds_in_transit, Inf),
+    i_connected_seconds = 1 / connected_seconds^(1 / 8),
+    log_S000 = S000
+    )
+```
+
+```{r}
+subway_connected_frame <- dplyr::data_frame(
+  from = subway_connected$nta_one,
+  to = subway_connected$nta_two,
+  weight = subway_connected$i_connected_seconds,
+)
+
+subway_connected_graph <- igraph::graph.data.frame(subway_connected_frame)
+subway_connected_matrix <- igraph::as_adjacency_matrix(
+  subway_connected_graph,
+  attr = "weight"
+)
+
+subway_connected_weights <- subway_connected_matrix %>%
+  spdep::mat2listw()
+```
+
+```{r}
+subway_connected_global_morans <- spdep::moran.test(
+  t_bk_dest_borders$log_S000,
+  subway_connected_weights,
+  zero.policy = TRUE,
+)
+print(subway_connected_global_morans)
+```
+
+```{r}
+subway_connected_lisa <- spdep::localmoran(
+  t_bk_dest_borders$log_S000,
+  subway_connected_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
+sig_lev <- 0.05;
+t_avg_jobs <- mean(t_bk_dest_borders$log_S000)
+
+subway_connected_classes <- subway_connected_lisa %>%
+  tibble::as.tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_bk_dest_borders$log_S000 <  avg_jobs ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 >= avg_jobs ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_bk_dest_borders$log_S000 < avg_jobs ~ "LH"
+    )
+  )
+
+t_bk_dest_borders$coType <- subway_connected_classes$coType %>%
+  tidyr::replace_na("Insignificant")
+
+ggplot(t_bk_dest_borders) +
+  geom_sf(aes(
+    fill=coType
+  ),
+  color = 'lightgrey'
+  ) +
+  scale_fill_manual(
+    values = c("red", "NA","blue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Job count at nta level"
+  )
+
+```
