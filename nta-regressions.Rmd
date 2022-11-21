@@ -12,6 +12,7 @@ library(tidyverse)
 ```{r}
 driving <- readr::read_csv('data/nta-driving-weights.csv')
 subway <- readr::read_csv('data/nta-subway-weights.csv')
+transfers <- readr::read_csv('data/nta-subway-transfers.csv')
 ```
 
 ## Driving plot
@@ -48,6 +49,7 @@ summary(i_driving_model)
 plot(i_driving_model)
 ```
 
+## Subway
 ```{r}
 ggplot(data = subway, aes(x = seconds_in_transit^(1/2), y = log(S000))) +
   geom_point() +
@@ -82,4 +84,25 @@ summary(subway_and_driving_model)
 summary(subway$seconds_in_transit)
 
 summary(driving$seconds_in_traffic)
+```
+
+## Transfers
+```{r}
+print(transfers)
+summary(transfers)
+```
+
+```{r}
+transfers_cat <- transfers %>%
+  dplyr::mutate(line_nom = as.character(line_count))
+```
+
+```{r}
+ggplot(data = transfers_cat, aes(x = line_nom, y = S000)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = transfers_cat, aes(x = line_nom, y = log(S000))) +
+  geom_boxplot()
 ```
