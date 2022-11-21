@@ -116,6 +116,12 @@ spdep::moran.plot(
 )
 ```
 
+### Natural log for trips
+```{r, message=FALSE}
+t_global_morans <- spdep::moran.test(log(nta_trip_nodes$trip_count), nta_trip_network_weights, zero.policy = TRUE)
+t_global_morans 
+```
+
 ## Local Indicators of spatial autocorrelation
 ```{r, message=FALSE}
 local_moran <- spdep::localmoran(
@@ -155,5 +161,48 @@ Visualize the confidence type for significant nodes
 ```{r, message=FALSE}
 ggraph::ggraph(nta_sig, layout="stress") +
   ggraph::geom_node_circle(aes(r = 0.025, color = coType))
+```
 
+### Natural log for trips
+```{r, message=FALSE}
+t_nta_trip_nodes <- nta_trip_nodes %>%
+  dplyr::mutate(log_trip_count = log(trip_count))
+
+t_local_moran <- spdep::localmoran(
+  t_nta_trip_nodes$log_trip_count,
+  nta_trip_network_weights,
+  zero.policy = TRUE,
+  na.action = na.omit,
+)
+
+sig_lev <- 0.05
+t_avg_trip_count <- mean(t_nta_trip_nodes$log_trip_count)
+
+t_lisa_classes <- t_local_moran %>%
+  tibble::as_tibble() %>%
+  magrittr::set_colnames(
+    c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)")
+  ) %>%
+  dplyr::mutate(
+    coType = dplyr::case_when(
+      `Pr(z > 0)` > 0.05 ~ "Insignificant",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_nta_trip_nodes$log_trip_count >= t_avg_trip_count ~ "HH",
+      `Pr(z > 0)` <= 0.05 & Ii >= 0 & t_nta_trip_nodes$log_trip_count <  t_avg_trip_count ~ "LL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_nta_trip_nodes$log_trip_count >= t_avg_trip_count ~ "HL",
+      `Pr(z > 0)` <= 0.05 & Ii < 0 & t_nta_trip_nodes$log_trip_count < t_avg_trip_count ~ "LH"
+    )
+  )
+
+t_nta_trip_network_cluster <- nta_trip_network %>%
+  tidygraph::activate(nodes) %>%
+  dplyr::mutate(coType = t_lisa_classes$coType %>% tidyr::replace_na("Insignificant"))
+
+t_nta_sig <- t_nta_trip_network_cluster %>%
+  dplyr::filter(coType != "Insignificant")
+```
+
+Visualize the confidence type for significant nodes
+```{r, message=FALSE}
+ggraph::ggraph(t_nta_sig, layout="stress") +
+  ggraph::geom_node_circle(aes(r = 0.025, color = coType))
 ```
