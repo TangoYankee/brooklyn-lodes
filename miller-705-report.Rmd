@@ -1,0 +1,97 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Analysis of the Triboro line
+
+## Exploratory data analysis
+
+### Distribution of job counts
+Original
+
+Natural log  
+
+### Distribution of commute counts
+Original
+
+Natural log
+
+### Number of subway lines and commute count
+Original
+
+Transformed
+
+### Subway Transit time and commute count
+Original
+
+Transformed
+
+### Driving in traffic time and commute count
+Original
+
+Transformed
+
+### Walking time and commute count
+
+Original
+
+Transformed
+
+## Regression of Subway, Driving, and walking
+
+### Subway model
+
+### Driving
+
+### Walking
+
+### Multiple linear regression for all three factors
+
+### Equations plotted for all factors
+Along all axis
+
+Cut to most pivotal times (10 to 50 minutes)
+Table of values at 10, 25, 50
+
+## Auto Correlation of Subway, Driving, and Walking
+
+
+### Global Moran's I
+
+#### Subway
+Statistic
+Plot 
+
+#### Driving
+Statisic
+Plot 
+
+#### Walking
+Statustic
+Plot
+
+### LISA
+
+#### Driving
+Statistic 
+Plot with major roadways overlayed
+
+#### Walking
+Statistic
+Plot of local area
+
+#### Subway
+Statistic 
+Plot with subway lines
+
+#### Network autocorrelation
+
+#### Visualization of network
+
+#### Visualization of network's complement
+
+#### Global Moran's I
+
+#### LISA
+Plot by coloring desire lines
