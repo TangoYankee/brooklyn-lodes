@@ -55,6 +55,25 @@ build_edges <- function(nodes){
 }
 ```
 
+## Distribution of trips
+Orginal data
+```{r}
+ggplot(nta_trip_nodes, aes(x = trip_count)) +
+  geom_histogram()
+```
+
+Transform data with natural log
+```{r}
+ggplot(nta_trip_nodes, aes(x = log(trip_count))) +
+  geom_histogram()
+```
+
+log base 10
+```{r}
+ggplot(nta_trip_nodes, aes(x = log10(trip_count))) +
+  geom_histogram()
+```
+
 Construct the graph
 ```{r, message=FALSE}
 nta_trip_edges <- build_edges(nta_trip_nodes$name) 
