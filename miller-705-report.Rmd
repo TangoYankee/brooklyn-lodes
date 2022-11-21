@@ -5,6 +5,30 @@ output:
 ---
 # Analysis of the Triboro line
 
+## Requirements
+
+### Libraries
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+### Files
+```{r, message=FALSE}
+subway_lines <- readr::read_csv('data/nta-subway-lines.csv')
+subway_times <- readr::read_csv('data/nta-subway-times.csv')
+driving_times <- readr::read_csv('data/nta-driving-times.csv')
+walking_times <- readr::read_csv('data/nta-walking-times.csv')
+```
+
+### Data
+```{r}
+
+subway_lines <- subway_lines %>%
+  dplyr::mutate(
+    log_S000 = log(S000)
+  )
+```
+
 ## Exploratory data analysis
 
 ### Distribution of job counts
@@ -14,8 +38,25 @@ Natural log
 
 ### Distribution of commute counts
 Original
+```{r, message = FALSE}
+commute_counts <- subway_lines %>%
+  dplyr::select(trip, S000) %>%
+  dplyr::mutate(
+    log_S000 = log(S000)
+  )
+```
+
+
+```{r}
+ggplot(commute_counts) +
+  geom_histogram(aes(x = S000), fill = "steelblue", color = "grey", binwidth = 30)
+```
 
 Natural log
+```{r}
+ggplot(data = commute_counts) +
+  geom_histogram(aes(x = log_S000), bins = 30, fill = "steelblue", color = "grey")
+```
 
 ### Number of subway lines and commute count
 Original
