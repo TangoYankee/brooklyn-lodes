@@ -14,6 +14,10 @@ library(tidyverse)
 
 ### Files
 ```{r, message=FALSE}
+nys_od <- readr::read_csv('data/ny_od_main_JT00_2019.csv')
+nyc_nta_borders <- sf::st_read('data/nyc_2010_nta_borders.geojson')
+nyc_nta_tract_equiv <- readxl::read_xlsx('data/nyc_2010_census_tract_nta_equiv.xlsx')
+
 subway_lines <- readr::read_csv('data/nta-subway-lines.csv')
 subway_times <- readr::read_csv('data/nta-subway-times.csv')
 driving_times <- readr::read_csv('data/nta-driving-times.csv')
@@ -21,20 +25,74 @@ walking_times <- readr::read_csv('data/nta-walking-times.csv')
 ```
 
 ### Data
-```{r}
+```{r, message=FALSE}
+bk_name <- "Brooklyn"
+bk_county_code <- "047"
+bk_parks <- "BK99"
 
+bk_nta_border <- nyc_nta_borders %>%
+  dplyr::filter(BoroName == bk_name)  %>%
+  dplyr::filter(NTACode != bk_parks) %>%
+  dplyr::select("NTACode")
+
+bk_nta_tract_equiv <- nyc_nta_tract_equiv %>%
+  dplyr::filter(borough_name == bk_name) %>%
+  dplyr::filter(nta_code != bk_parks) %>%
+  dplyr::rename(tract = census_tract) %>%
+  dplyr::select("tract", "nta_code")
+
+od <- nys_od %>%
+  dplyr::filter(
+    stringr::str_sub(as.character(w_geocode), 3, 5) == bk_county_code &
+    stringr::str_sub(as.character(h_geocode), 3, 5) == bk_county_code 
+  ) %>%
+  dplyr::mutate(
+   w_tract = stringr::str_sub(as.character(w_geocode), 6, 11)
+  ) %>%
+  dplyr::mutate(
+   h_tract = stringr::str_sub(as.character(h_geocode), 6, 11)
+  ) %>%
+  dplyr::select("w_tract", "h_tract", "S000") %>%
+  dplyr::left_join(bk_nta_tract_equiv, c("w_tract" = "tract")) %>%
+  dplyr::rename(w_nta_code = nta_code) %>%
+  dplyr::left_join(bk_nta_tract_equiv, c("h_tract" = "tract")) %>%
+  dplyr::rename(h_nta_code = nta_code) %>%
+  dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
+  dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks) 
+``` 
+
+TODO: Resolve orphan code
 subway_lines <- subway_lines %>%
   dplyr::mutate(
     log_S000 = log(S000)
   )
-```
 
 ## Exploratory data analysis
 
 ### Distribution of job counts
+```{r, message = FALSE}
+job_counts <- od %>%
+  dplyr::group_by(w_nta_code) %>%
+  dplyr::summarise(
+    S000 = sum(S000)
+  ) %>% 
+  unique() %>%
+  mutate(
+    log_S000 = log(S000)
+  )
+```
+
 Original
+```{r, message=FALSE}
+ggplot(job_counts) +
+  geom_histogram(aes(x = S000), fill = "steelblue", color = "grey", bins = "30")
+```
 
 Natural log  
+```{r, message=FALSE}
+ggplot(job_counts) +
+  geom_histogram(aes(x = log_S000), fill = "steelblue", color = "grey", bins = "30")
+```
 
 ### Distribution of commute counts
 Original
