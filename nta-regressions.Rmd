@@ -156,5 +156,63 @@ ggplot(
   stat_function(fun = i_walking_eq, color = "blue") +
   stat_function(fun = i_driving_eq, color = "red") +
   stat_function(fun = i_subway_eq, color = "green")
+```
 
+## Subway remove points with no connections
+```{r}
+f_i_subway <- subway %>%
+  dplyr::left_join(transfers) %>%
+  dplyr::filter(line_count > 0) %>%
+  dplyr::mutate(
+    log_S000 = log(S000),
+    i_seconds = 1 / seconds_in_transit^(1/8)
+  )
+```
+
+```{r}
+ggplot(f_i_subway, aes(i_seconds, log_S000)) +
+  geom_point() +
+  stat_smooth()
+```
+
+```{r}
+f_i_subway_model <- lm(f_i_subway$log_S000 ~ f_i_subway$i_seconds)
+summary(f_i_subway_model)
+```
+
+```{r}
+f_i_subway_eq <- function(x) exp(-3.0033 + 22.1264 / x^(1 / 8))
+```
+
+```{r}
+ggplot(
+  data.frame(
+    seconds = seq(from = 301, to = 15100, by = 14.8)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue", xlim = c(701, 15171)) +
+  stat_function(fun = i_driving_eq, color = "red", xlim = c(276, 3122)) +
+  stat_function(fun = f_i_subway_eq, color = "green", xlim = c(645, 6924))
+```
+
+```{r}
+ggplot(
+  data.frame(
+    seconds = c(701, 3122)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue") +
+  stat_function(fun = i_driving_eq, color = "red") +
+  stat_function(fun = f_i_subway_eq, color = "green")
+```
+
+```{r}
+ggplot(
+  data.frame(
+    seconds = c(1200, 2400)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue") +
+  stat_function(fun = i_driving_eq, color = "red") +
+  stat_function(fun = f_i_subway_eq, color = "green")
 ```
