@@ -13,6 +13,7 @@ library(tidyverse)
 driving <- readr::read_csv('data/nta-driving-weights.csv')
 subway <- readr::read_csv('data/nta-subway-weights.csv')
 transfers <- readr::read_csv('data/nta-subway-transfers.csv')
+walking <- readr::read_csv('data/nta-walking-weights.csv')
 ```
 
 ## Driving plot
@@ -85,7 +86,23 @@ summary(subway$seconds_in_transit)
 
 summary(driving$seconds_in_traffic)
 ```
+## walking
+```{r}
+ggplot(data = walking, aes(x = seconds_of_walking, y = S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
+```{r}
+ggplot(data = walking, aes(x = 1 / seconds_of_walking^(1/8), y = log(S000))) +
+  geom_point() +
+  stat_smooth()
+```
+```{r}
+i_walking_time <- 1 / walking$seconds_of_walking^(1 / 8)
+i_walking_model <- lm(log(walking$S000) ~ i_walking_time)
+summary(i_walking_model)
+```
 ## Transfers
 ```{r}
 print(transfers)
@@ -105,4 +122,39 @@ ggplot(data = transfers_cat, aes(x = line_nom, y = S000)) +
 ```{r}
 ggplot(data = transfers_cat, aes(x = line_nom, y = log(S000))) +
   geom_boxplot()
+```
+
+## Plot the model equations
+```{r}
+i_walking_eq <- function(x) exp(-1.9091 + 20.8372 / x^(1 / 8))
+i_driving_eq <- function(x) exp(-1.9856 + 17.9177 / x^(1 / 8))
+i_subway_eq <- function(x) exp(-3.4558 + 23.4092 / x^(1 / 8))
+
+ggplot(
+  data.frame(
+    seconds = seq(from = 301, to = 15100, by = 14.8)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue", xlim = c(701, 15171)) +
+  stat_function(fun = i_driving_eq, color = "red", xlim = c(276, 3122)) +
+  stat_function(fun = i_subway_eq, color = "green", xlim = c(645, 6924))
+
+ggplot(
+  data.frame(
+    seconds = c(701, 3122)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue") +
+  stat_function(fun = i_driving_eq, color = "red") +
+  stat_function(fun = i_subway_eq, color = "green")
+
+ggplot(
+  data.frame(
+    seconds = c(1200, 2400)
+    )
+  , aes(seconds)) +
+  stat_function(fun = i_walking_eq, color = "blue") +
+  stat_function(fun = i_driving_eq, color = "red") +
+  stat_function(fun = i_subway_eq, color = "green")
+
 ```
