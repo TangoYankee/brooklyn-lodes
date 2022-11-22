@@ -10,6 +10,8 @@ output:
 ### Libraries
 ```{r, message=FALSE}
 library(tidyverse)
+library(igraph)
+library(sf)
 ```
 
 ### Files
@@ -61,12 +63,6 @@ od <- nys_od %>%
   dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks) 
 ``` 
 
-TODO: Resolve orphan code
-subway_lines <- subway_lines %>%
-  dplyr::mutate(
-    log_S000 = log(S000)
-  )
-
 ## Exploratory data analysis
 
 ### Distribution of job counts
@@ -95,7 +91,6 @@ ggplot(job_counts) +
 ```
 
 ### Distribution of commute counts
-Original
 ```{r, message = FALSE}
 commute_counts <- subway_lines %>%
   dplyr::select(trip, S000) %>%
@@ -104,7 +99,7 @@ commute_counts <- subway_lines %>%
   )
 ```
 
-
+Original
 ```{r}
 ggplot(commute_counts) +
   geom_histogram(aes(x = S000), fill = "steelblue", color = "grey", binwidth = 30)
@@ -117,73 +112,396 @@ ggplot(data = commute_counts) +
 ```
 
 ### Number of subway lines and commute count
+```{r, message = FALSE}
+subway_lines <- subway_lines %>%
+  dplyr::mutate(
+    line_count_ordinal = as.character(line_count),
+    log_S000 = log(S000)
+  )
+```
 Original
+```{r}
+ggplot(data = subway_lines, aes(x = line_count_ordinal, y = S000)) +
+  geom_boxplot()
+```
 
 Transformed
+```{r, message = FALSE}
+ggplot(data = subway_lines, aes(x  = line_count_ordinal, y = log_S000)) +
+  geom_boxplot()
+```
 
 ### Subway Transit time and commute count
+```{r, message=FALSE}
+subway_times <- subway_times %>%
+  dplyr::mutate(
+    log_S000 = log(S000),
+    i_seconds_in_transit = 1 / seconds_in_transit^(1/8)
+  )
+subway_times_connected <- subway_times %>%
+  dplyr::filter(
+    subway_lines$line_count > 0 
+  )
+```
+
 Original
+```{r, message = FALSE}
+ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
 Transformed
+```{r, message = FALSE}
+ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000)) +
+  geom_point() +
+  stat_smooth()
+```
+
 
 ### Driving in traffic time and commute count
+```{r, message=FALSE}
+driving_times <- driving_times %>%
+  dplyr::mutate(
+    log_S000 = log(S000),
+    i_seconds_in_traffic = 1 / seconds_in_traffic^(1/8)
+  )
+```
 Original
+```{r, message = FALSE}
+ggplot(data = driving_times, aes(x = seconds_in_traffic, y = S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
 Transformed
+```{r, message = FALSE}
+ggplot(data = driving_times, aes(x = i_seconds_in_traffic, y = log_S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
 ### Walking time and commute count
+```{r, message=FALSE}
+walking_times <- walking_times %>%
+  dplyr::mutate(
+    log_S000 = log(S000),
+    i_seconds_of_walking = 1 / seconds_of_walking^(1/8)
+  )
+```
 
 Original
+```{r, message = FALSE}
+ggplot(data = walking_times, aes(x = seconds_of_walking, y = S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
 Transformed
+```{r, message = FALSE}
+ggplot(data = walking_times, aes(x = i_seconds_of_walking, y = log_S000)) +
+  geom_point() +
+  stat_smooth()
+```
 
 ## Regression of Subway, Driving, and walking
 
 ### Subway model
+```{r, message=FALSE}
+subway_connected_model <- lm(subway_times_connected$log_S000 ~ subway_times_connected$i_seconds_in_transit)
+summary(subway_connected_model)
+plot(subway_connected_model)
+```
 
 ### Driving
+```{r, message=FALSE}
+driving_model <- lm(driving_times$log_S000 ~ driving_times$i_seconds_in_traffic)
+summary(driving_model)
+plot(driving_model)
+```
 
 ### Walking
+```{r, message = FALSE}
+walking_model <- lm(walking_times$log_S000 ~ walking_times$i_seconds_of_walking)
+summary(walking_model)
+plot(driving_model)
+```
 
 ### Multiple linear regression for all three factors
 
 ### Equations plotted for all factors
+```{r, message=FALSE}
+subway_connected_eq <- function(t) exp(-3.0033 + 22.1264 / t^(1/8))
+driving_eq <- function(t) exp(-1.9856 + 17.9177 / t^(1 / 8))
+walking_eq <- function(t) exp(-1.9091 + 20.8372 / t^(1 / 8))
+
+summary(subway_times_connected$seconds_in_transit)
+summary(driving_times$seconds_in_traffic)
+summary(walking_times$seconds_of_walking)
+```
+
+```{r, message = FALSE}
+ggplot(
+  dplyr::data_frame(
+    seconds = seq(from = 301, to = 15200, by = 14.9)
+  ), aes(seconds)) +
+  stat_function(fun = subway_connected_eq, color = "steelblue", xlim = c(645, 6924)) +
+  stat_function(fun = driving_eq, color = "seagreen", xlim = c(276, 3122)) +
+  stat_function(fun = walking_eq, color = "goldenrod", xlim = c(702, 15171))
+```
+
+
 Along all axis
 
 Cut to most pivotal times (10 to 50 minutes)
 Table of values at 10, 25, 50
-
+```{r, message = FALSE}
+ggplot(
+  dplyr::data_frame(
+    seconds = seq(from = 720, to = 3000, by = 2.28)
+  ), aes(seconds)) +
+  stat_function(fun = subway_connected_eq, color = "steelblue") +
+  stat_function(fun = driving_eq, color = "seagreen") +
+  stat_function(fun = walking_eq, color = "goldenrod")
+```
 ## Auto Correlation of Subway, Driving, and Walking
 
 
 ### Global Moran's I
+```{r, message = FALSE}
+subway_times <- subway_times %>%
+  dplyr::mutate(
+    i_c_seconds_in_transit = ifelse(subway_lines$line_count > 0, i_seconds_in_transit, 0)
+  ) 
+
+subway_graph <- subway_times %>%
+  dplyr::select(
+    c(
+      nta_one,
+      nta_two,
+      i_c_seconds_in_transit
+    )
+  ) %>%
+  dplyr::rename(
+    from = nta_one,
+    to = nta_two,
+    weight = i_c_seconds_in_transit,
+  ) %>%
+  igraph::graph.data.frame(
+    directed = FALSE
+  ) 
+
+subway_weights <- subway_graph %>%
+  igraph::as_adjacency_matrix(attr = "weight") %>%
+  spdep::mat2listw()
+
+driving_weights <- driving_times %>%
+  dplyr::select(
+    c(
+      nta_one,
+      nta_two,
+      i_seconds_in_traffic
+    )
+  ) %>%
+  dplyr::rename(
+    from = nta_one,
+    to = nta_two,
+    weight = i_seconds_in_traffic
+  ) %>%
+  igraph::graph.data.frame(
+    directed = FALSE
+  ) %>%
+  igraph::as_adjacency_matrix(attr = "weight") %>%
+  spdep::mat2listw()
+
+walking_weights <- walking_times %>%
+  dplyr::select(
+    c(
+      nta_one,
+      nta_two,
+      i_seconds_of_walking
+    )
+  ) %>%
+  dplyr::rename(
+    from = nta_one,
+    to = nta_two,
+    weight = i_seconds_of_walking
+  ) %>%
+  igraph::graph.data.frame(
+    directed = FALSE
+  ) %>%
+  igraph::as_adjacency_matrix(attr = "weight") %>%
+  spdep::mat2listw()
+```
 
 #### Subway
-Statistic
-Plot 
+```{r, message=FALSE}
+subway_global_morans <- spdep::moran.test(
+  job_counts$log_S000,
+  subway_weights,
+  zero.policy = TRUE,
+)
+print(subway_global_morans)
 
+spdep::moran.plot(
+  job_counts$log_S000,
+  subway_weights,
+  zero.policy = TRUE,
+  xlab = "Job count",
+  ylab = "Lagged job count"
+)
+```
 #### Driving
-Statisic
-Plot 
+```{r, message=FALSE}
+driving_global_morans <- spdep::moran.test(
+  job_counts$log_S000,
+  driving_weights,
+  zero.policy = TRUE,
+)
+print(driving_global_morans)
+
+spdep::moran.plot(
+  job_counts$log_S000,
+  driving_weights,
+  zero.policy = TRUE,
+  xlab = "Job count",
+  ylab = "Lagged job count"
+)
+```
 
 #### Walking
-Statustic
-Plot
+```{r, message=FALSE}
+walking_global_morans <- spdep::moran.test(
+  job_counts$log_S000,
+  walking_weights,
+  zero.policy = TRUE,
+)
+print(walking_global_morans)
+
+spdep::moran.plot(
+  job_counts$log_S000,
+  walking_weights,
+  zero.policy = TRUE,
+  xlab = "Job count",
+  ylab = "Lagged job count"
+)
+```
 
 ### LISA
+```{r, message=FALSE}
+avg_jobs <- mean(job_counts$log_S000)
 
-#### Driving
-Statistic 
-Plot with major roadways overlayed
+classify_co_types <- function(mode_lisa, l_job_counts, avg_job_count) {
+  mode_lisa %>%
+    tibble::as_tibble() %>%
+    magrittr::set_colnames(
+      c("Ii","E.Ii","Var.Ii","Z.Ii","Pr(z > 0)") 
+    ) %>%
+    dplyr::mutate(
+      co_type = dplyr::case_when(
+        `Pr(z > 0)` <= 0.05 &
+          Ii >= 0 &
+          l_job_counts >= avg_job_count ~ "HH",
+        `Pr(z > 0)` <= 0.05 &
+          Ii >= 0 &
+          l_job_counts <  avg_job_count ~ "LL",
+        `Pr(z > 0)` <= 0.05 &
+          Ii < 0 &
+          l_job_counts >= avg_job_count ~ "HL",
+        `Pr(z > 0)` <= 0.05 &
+          Ii < 0 &
+          l_job_counts < avg_job_count ~ "LH"
+      )
+    )
+}
 
-#### Walking
-Statistic
-Plot of local area
+subway_lisa <- spdep::localmoran(
+  job_counts$log_S000,
+  subway_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+) 
+
+driving_lisa <- spdep::localmoran(
+  job_counts$log_S000,
+  driving_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
+walking_lisa <- spdep::localmoran(
+  job_counts$log_S000,
+  walking_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
+subway_classes <- classify_co_types(subway_lisa, job_counts$log_S000, avg_jobs)
+driving_classes <- classify_co_types(driving_lisa, job_counts$log_S000, avg_jobs)
+walking_classes <- classify_co_types(walking_lisa, job_counts$log_S000, avg_jobs)
+
+subway_bk_nta_border <- bk_nta_border %>%
+  dplyr::mutate(
+    co_type = ifelse(is.na(subway_classes$co_type), "Insignificant", subway_classes$co_type)
+  )
+
+driving_bk_nta_border <- bk_nta_border %>%
+  dplyr::mutate(
+    co_type = ifelse(is.na(driving_classes$co_type), "Insignificant",  driving_classes$co_type)
+  )
+
+walking_bk_nta_border <- bk_nta_border %>%
+  dplyr::mutate(
+    co_type = ifelse(is.na(walking_classes$co_type), "Insignificant", walking_classes$co_type)
+  )
+```
+
 
 #### Subway
 Statistic 
 Plot with subway lines
+```{r, message=FALSE}
+ggplot(subway_bk_nta_border) +
+  geom_sf(aes(fill = co_type), col = 'lightgrey') +
+  scale_fill_manual(
+    values = c("red", "goldenrod", "NA", "steelblue"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Neighboring job counts"
+  )
+```
+#### Driving
 
+```{r, message=FALSE}
+ggplot(driving_bk_nta_border) +
+  geom_sf(aes(fill = co_type), col = 'lightgrey') +
+  scale_fill_manual(
+    values = c("red", "goldenrod", "NA", "steelblue", "seagreen"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Neighboring job counts"
+  )
+```
+Statistic 
+Plot with major roadways overlayed
+
+#### Walking
+```{r, message=FALSE}
+ggplot(walking_bk_nta_border) +
+  geom_sf(aes(fill = co_type), col = 'lightgrey') +
+  scale_fill_manual(
+    values = c("red", "goldenrod", "NA", "seagreen"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Neighboring job counts"
+  )
+```
+subway
+Statistic
+Plot of local area
 #### Network autocorrelation
 
 #### Visualization of network

@@ -10,7 +10,7 @@ options(scipen = 999)
 ```
 
 ```{r}
-subway <- readr::read_csv('data/nta-subway-weights.csv')
+subway <- readr::read_csv('data/nta-subway-times.csv')
 ```
 
 ```{r}
@@ -197,7 +197,7 @@ ggplot(t_bk_dest_borders) +
 
 ## Note unnconnected 
 ```{r}
-lines <- readr::read_csv('data/nta-subway-transfers.csv')
+lines <- readr::read_csv('data/nta-subway-lines.csv')
 summary(lines$line_count)
 
 subway_connected <- subway %>%
