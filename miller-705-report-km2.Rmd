@@ -11,6 +11,7 @@ output:
 ```{r, message=FALSE}
 library(tidyverse)
 library(igraph)
+library(tmap)
 library(sf)
 ```
 
@@ -35,7 +36,7 @@ bk_parks <- "BK99"
 bk_nta_border <- nyc_nta_borders %>%
   dplyr::filter(BoroName == bk_name)  %>%
   dplyr::filter(NTACode != bk_parks) %>%
-  dplyr::select("NTACode")
+  dplyr::select("NTACode", "Shape__Area")
 
 bk_nta_tract_equiv <- nyc_nta_tract_equiv %>%
   dplyr::filter(borough_name == bk_name) %>%
@@ -61,73 +62,134 @@ od <- nys_od %>%
   dplyr::rename(h_nta_code = nta_code) %>%
   dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
   dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks) 
+
+od_borders <- od %>%
+  dplyr::left_join(bk_nta_border, c("h_nta_code" = "NTACode")) %>%
+  dplyr::rename(
+    h_shape_area = Shape__Area,
+    h_geometry = geometry
+  ) %>%
+  dplyr::left_join(bk_nta_border, c("w_nta_code" = "NTACode")) %>%
+  dplyr::rename(
+    w_shape_area = Shape__Area,
+    w_geometry = geometry
+  )
 ``` 
 
 ## Exploratory data analysis
 
 ### Distribution of job counts
+Job counts normalized for NTA km2    
 ```{r, message = FALSE}
-job_counts <- od %>%
+job_counts <- od_borders %>%
+  dplyr::select(
+    c("w_nta_code", "S000", "w_shape_area", "w_geometry")
+  ) %>%
   dplyr::group_by(w_nta_code) %>%
   dplyr::summarise(
-    S000 = sum(S000)
-  ) %>% 
+    S000 = sum(S000),
+    w_shape_area,
+    w_geometry
+  ) %>%
   unique() %>%
   mutate(
-    log_S000 = log(S000)
-  )
+    S000_km2 = S000 / (w_shape_area / 1e6),
+    log_S000_km2 = log(S000_km2)
+  ) %>%
+  rename(
+    geometry = w_geometry,
+    shape_area = w_shape_area
+  ) %>%
+  sf::st_as_sf()
 ```
 
 Original
 ```{r, message=FALSE}
 ggplot(job_counts) +
-  geom_histogram(aes(x = S000), fill = "steelblue", color = "grey", bins = "30")
+  geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = "30")
 ```
 
 Natural log  
 ```{r, message=FALSE}
 ggplot(job_counts) +
-  geom_histogram(aes(x = log_S000), fill = "steelblue", color = "grey", bins = "30")
+  geom_histogram(aes(x = log(S000_km2)), fill = "steelblue", color = "grey", bins = "30")
 ```
 
+Map of natural log
+```{r, message=FALSE}
+tmap::tm_shape(job_counts) + 
+  tmap::tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Job count in NTA"
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE
+  )
+```
+
+```{r, message=FALSE}
+tmap::tm_shape(job_counts) + 
+  tmap::tm_polygons(
+    col = "log_S000_km2",
+    style = "jenks",
+    title = "Job count in NTA"
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE
+  )
+```
 ### Distribution of commute counts
 ```{r, message = FALSE}
-commute_counts <- subway_lines %>%
-  dplyr::select(trip, S000) %>%
+commute_counts <- subway_times %>%
+  dplyr::select(-seconds_in_transit) %>%
+  dplyr::left_join(bk_nta_border, c("nta_one" = "NTACode")) %>%
+  dplyr::rename(
+    shape_area_one = Shape__Area,
+    geometry_one = geometry,
+  ) %>%
+  dplyr::left_join(bk_nta_border, c("nta_two" = "NTACode")) %>%
+  dplyr::rename(
+    shape_area_two = Shape__Area,
+    geometry_two = geometry
+  ) %>%
   dplyr::mutate(
-    log_S000 = log(S000)
+    S000_km2 = S000 / ((shape_area_one * 1e-6) + (shape_area_two * 1e-6)),
+    log_S000_km2 = log(S000_km2)
   )
 ```
 
 Original
 ```{r}
 ggplot(commute_counts) +
-  geom_histogram(aes(x = S000), fill = "steelblue", color = "grey", binwidth = 30)
+  geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = 40)
 ```
 
 Natural log
 ```{r}
 ggplot(data = commute_counts) +
-  geom_histogram(aes(x = log_S000), bins = 30, fill = "steelblue", color = "grey")
+  geom_histogram(aes(x = log_S000_km2), bins = 30, fill = "steelblue", color = "grey")
 ```
 
 ### Number of subway lines and commute count
+Standardized to per square km
 ```{r, message = FALSE}
 subway_lines <- subway_lines %>%
   dplyr::mutate(
     line_count_ordinal = as.character(line_count),
-    log_S000 = log(S000)
+    S000_km2 = commute_counts$S000_km2,
+    log_S000_km2 = commute_counts$log_S000_km2,
   )
 ```
 Original
 ```{r}
-ggplot(data = subway_lines, aes(x = line_count_ordinal, y = S000)) +
+ggplot(data = subway_lines, aes(x = line_count_ordinal, y = S000_km2)) +
   geom_boxplot()
 ```
 
 Transformed
 ```{r, message = FALSE}
-ggplot(data = subway_lines, aes(x  = line_count_ordinal, y = log_S000)) +
+ggplot(data = subway_lines, aes(x  = line_count_ordinal, y = log_S000_km2)) +
   geom_boxplot()
 ```
 
@@ -136,6 +198,8 @@ ggplot(data = subway_lines, aes(x  = line_count_ordinal, y = log_S000)) +
 subway_times <- subway_times %>%
   dplyr::mutate(
     log_S000 = log(S000),
+    S000_km2 = commute_counts$S000_km2,
+    log_S000_km2 = commute_counts$log_S000_km2,
     i_seconds_in_transit = 1 / seconds_in_transit^(1/8)
   )
 subway_times_connected <- subway_times %>%
@@ -146,14 +210,14 @@ subway_times_connected <- subway_times %>%
 
 Original
 ```{r, message = FALSE}
-ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000)) +
+ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
 
 Transformed
 ```{r, message = FALSE}
-ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000)) +
+ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
@@ -164,19 +228,26 @@ ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000
 driving_times <- driving_times %>%
   dplyr::mutate(
     log_S000 = log(S000),
+    S000_km2 = commute_counts$S000_km2,
+    log_S000_km2 = commute_counts$log_S000_km2,
     i_seconds_in_traffic = 1 / seconds_in_traffic^(1/8)
+  ) # %>%
+```
+```
+  dplyr::filter(
+    trip %in% subway_times_connected$trip
   )
 ```
 Original
 ```{r, message = FALSE}
-ggplot(data = driving_times, aes(x = seconds_in_traffic, y = S000)) +
+ggplot(data = driving_times, aes(x = seconds_in_traffic, y = S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
 
 Transformed
 ```{r, message = FALSE}
-ggplot(data = driving_times, aes(x = i_seconds_in_traffic, y = log_S000)) +
+ggplot(data = driving_times, aes(x = i_seconds_in_traffic, y = log_S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
@@ -186,20 +257,28 @@ ggplot(data = driving_times, aes(x = i_seconds_in_traffic, y = log_S000)) +
 walking_times <- walking_times %>%
   dplyr::mutate(
     log_S000 = log(S000),
+    S000_km2 = commute_counts$S000_km2,
+    log_S000_km2 = commute_counts$log_S000_km2,
     i_seconds_of_walking = 1 / seconds_of_walking^(1/8)
+  )
+```
+```
+# %>%
+  dplyr::filter(
+    trip %in% subway_times_connected$trip
   )
 ```
 
 Original
 ```{r, message = FALSE}
-ggplot(data = walking_times, aes(x = seconds_of_walking, y = S000)) +
+ggplot(data = walking_times, aes(x = seconds_of_walking, y = S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
 
 Transformed
 ```{r, message = FALSE}
-ggplot(data = walking_times, aes(x = i_seconds_of_walking, y = log_S000)) +
+ggplot(data = walking_times, aes(x = i_seconds_of_walking, y = log_S000_km2)) +
   geom_point() +
   stat_smooth()
 ```
@@ -208,21 +287,21 @@ ggplot(data = walking_times, aes(x = i_seconds_of_walking, y = log_S000)) +
 
 ### Subway model
 ```{r, message=FALSE}
-subway_connected_model <- lm(subway_times_connected$log_S000 ~ subway_times_connected$i_seconds_in_transit)
+subway_connected_model <- lm(subway_times_connected$log_S000_km2 ~ subway_times_connected$i_seconds_in_transit)
 summary(subway_connected_model)
 plot(subway_connected_model)
 ```
 
 ### Driving
 ```{r, message=FALSE}
-driving_model <- lm(driving_times$log_S000 ~ driving_times$i_seconds_in_traffic)
+driving_model <- lm(driving_times$log_S000_km2 ~ driving_times$i_seconds_in_traffic)
 summary(driving_model)
 plot(driving_model)
 ```
 
 ### Walking
 ```{r, message = FALSE}
-walking_model <- lm(walking_times$log_S000 ~ walking_times$i_seconds_of_walking)
+walking_model <- lm(walking_times$log_S000_km2 ~ walking_times$i_seconds_of_walking)
 summary(walking_model)
 plot(driving_model)
 ```
@@ -231,9 +310,9 @@ plot(driving_model)
 
 ### Equations plotted for all factors
 ```{r, message=FALSE}
-subway_connected_eq <- function(t) exp(-3.0033 + 22.1264 / t^(1/8))
-driving_eq <- function(t) exp(-1.9856 + 17.9177 / t^(1 / 8))
-walking_eq <- function(t) exp(-1.9091 + 20.8372 / t^(1 / 8))
+subway_connected_eq <- function(t) exp(subway_connected_model$coefficients[[1]] + subway_connected_model$coefficients[[2]] / t^(1/8))
+driving_eq <- function(t) exp(driving_model$coefficients[[1]] + driving_model$coefficients[[2]] / t^(1 / 8))
+walking_eq <- function(t) exp(walking_model$coefficients[[1]] + walking_model$coefficients[[2]] / t^(1 / 8))
 
 summary(subway_times_connected$seconds_in_transit)
 summary(driving_times$seconds_in_traffic)
@@ -340,14 +419,14 @@ walking_weights <- walking_times %>%
 #### Subway
 ```{r, message=FALSE}
 subway_global_morans <- spdep::moran.test(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   subway_weights,
   zero.policy = TRUE,
 )
 print(subway_global_morans)
 
 spdep::moran.plot(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   subway_weights,
   zero.policy = TRUE,
   xlab = "Job count",
@@ -357,14 +436,14 @@ spdep::moran.plot(
 #### Driving
 ```{r, message=FALSE}
 driving_global_morans <- spdep::moran.test(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   driving_weights,
   zero.policy = TRUE,
 )
 print(driving_global_morans)
 
 spdep::moran.plot(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   driving_weights,
   zero.policy = TRUE,
   xlab = "Job count",
@@ -375,14 +454,14 @@ spdep::moran.plot(
 #### Walking
 ```{r, message=FALSE}
 walking_global_morans <- spdep::moran.test(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   walking_weights,
   zero.policy = TRUE,
 )
 print(walking_global_morans)
 
 spdep::moran.plot(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   walking_weights,
   zero.policy = TRUE,
   xlab = "Job count",
@@ -392,7 +471,7 @@ spdep::moran.plot(
 
 ### LISA
 ```{r, message=FALSE}
-avg_jobs <- mean(job_counts$log_S000)
+avg_jobs <- mean(job_counts$log_S000_km2)
 
 classify_co_types <- function(mode_lisa, l_job_counts, avg_job_count) {
   mode_lisa %>%
@@ -419,29 +498,29 @@ classify_co_types <- function(mode_lisa, l_job_counts, avg_job_count) {
 }
 
 subway_lisa <- spdep::localmoran(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   subway_weights,
   zero.policy = TRUE,
   na.action = na.omit
 ) 
 
 driving_lisa <- spdep::localmoran(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   driving_weights,
   zero.policy = TRUE,
   na.action = na.omit
 )
 
 walking_lisa <- spdep::localmoran(
-  job_counts$log_S000,
+  job_counts$log_S000_km2,
   walking_weights,
   zero.policy = TRUE,
   na.action = na.omit
 )
 
-subway_classes <- classify_co_types(subway_lisa, job_counts$log_S000, avg_jobs)
-driving_classes <- classify_co_types(driving_lisa, job_counts$log_S000, avg_jobs)
-walking_classes <- classify_co_types(walking_lisa, job_counts$log_S000, avg_jobs)
+subway_classes <- classify_co_types(subway_lisa, job_counts$log_S000_km2, avg_jobs)
+driving_classes <- classify_co_types(driving_lisa, job_counts$log_S000_km2, avg_jobs)
+walking_classes <- classify_co_types(walking_lisa, job_counts$log_S000_km2, avg_jobs)
 
 subway_bk_nta_border <- bk_nta_border %>%
   dplyr::mutate(
@@ -495,7 +574,7 @@ Plot with major roadways overlayed
 ggplot(walking_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
   scale_fill_manual(
-    values = c("red", "goldenrod", "NA", "seagreen"),
+    values = c("red", "goldenrod", "NA", "steelblue", "seagreen"),
     name = "Clusters & \nOutliers"
   ) +
   labs(
