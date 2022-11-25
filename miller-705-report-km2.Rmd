@@ -456,6 +456,16 @@ print(predictions)
 
 ## Auto Correlation of Subway, Driving, and Walking
 
+The data points removed for the linear regression are returned for the 
+correlation. For driving and walking, they are returned without further modification.
+For the subway analysis, any trips that were made without using the subway are
+giving a value of 0. This reflects that the two NTAs involved in the trip are
+not actually neighbors through the subway definition.
+
+In addition to the three infrastructure neighborhood definitions, a Queens
+contiguity analysis is run for reference.
+
+The natural log of job counts per km2 is used as the value for each NTA.
 
 
 ### Global Moran's I
@@ -542,8 +552,8 @@ spdep::moran.plot(
   job_counts$log_S000_km2,
   subway_weights,
   zero.policy = TRUE,
-  xlab = "Job count",
-  ylab = "Lagged job count"
+  xlab = "Natural log jobs/km2",
+  ylab = "Lagged natural log jobs/km2"
 )
 ```
 #### Driving
@@ -559,8 +569,8 @@ spdep::moran.plot(
   job_counts$log_S000_km2,
   driving_weights,
   zero.policy = TRUE,
-  xlab = "Job count",
-  ylab = "Lagged job count"
+  xlab = "Natural log jobs/km2",
+  ylab = "Lagged natural log jobs/km2"
 )
 ```
 
@@ -577,8 +587,8 @@ spdep::moran.plot(
   job_counts$log_S000_km2,
   walking_weights,
   zero.policy = TRUE,
-  xlab = "Job count",
-  ylab = "Lagged job count"
+  xlab = "Natural log jobs/km2",
+  ylab = "Lagged natural log jobs/km2"
 )
 ```
 #### Queens
@@ -594,8 +604,8 @@ spdep::moran.plot(
   job_counts$log_S000_km2,
   queen_weights,
   zero.policy = TRUE,
-  xlab = "Job count",
-  ylab = "Lagged job count"
+  xlab = "Natural log jobs/km2",
+  ylab = "Lagged natural log jobs/km2"
 )
 ```
 
@@ -683,8 +693,6 @@ queen_bk_nta_border <- bk_nta_border %>%
 
 
 #### Subway
-Statistic 
-Plot with subway lines
 ```{r, message=FALSE}
 ggplot(subway_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
@@ -693,11 +701,11 @@ ggplot(subway_bk_nta_border) +
     name = "Clusters & \nOutliers"
   ) +
   labs(
-    title = "Neighboring job counts"
+    title = "Subway connections",
+    subtitle = "Natural log of job counts per square km"
   )
 ```
 #### Driving
-
 ```{r, message=FALSE}
 ggplot(driving_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
@@ -706,7 +714,8 @@ ggplot(driving_bk_nta_border) +
     name = "Clusters & \nOutliers"
   ) +
   labs(
-    title = "Neighboring job counts by driving"
+    title = "Driving connections",
+    subtitle = "Natural log of job counts per square km"
   )
 ```
 Statistic 
@@ -720,7 +729,8 @@ ggplot(walking_bk_nta_border) +
     name = "Clusters & \nOutliers"
   ) +
   labs(
-    title = "Neighboring job counts"
+    title = "Walking connections",
+    subtitle = "Natural log of job counts per square km"
   )
 ```
 
@@ -733,7 +743,8 @@ ggplot(queen_bk_nta_border) +
     name = "Clusters & \nOutliers"
   ) +
   labs(
-    title = "Neighboring job counts"
+    title = "Queen contiguity",
+    subtitle = "Natural log of job counts per square km"
   )
 ```
 
