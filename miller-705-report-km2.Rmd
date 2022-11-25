@@ -3,9 +3,20 @@ output:
   pdf_document: default
   html_document: default
 ---
-# Analysis of the Triboro line
+# November 28th project update
 
-## Requirements
+This update explores data obtained through Google API directions requests. Three classes
+of requests were made. For each class of requests, a different mode of 
+transportation is requested to make the trip. These modes were subway, driving,
+and walking. Directions were found for every single pair of NTAs. The directions
+were considered undirected- the significant characteristics of the trips are the
+same in each direction. This resulted in 1225 routes (50 choose 2). Each trip
+was given a departure time of 9:00am EST for Nov 21. The driving time used 
+the "best guess" Google traffic model. The travel time for each transportation
+mode was saved to a csv file. For the subway trips, the number of subway lines
+required to make the trip are also recorded. Each route starts and ends in a piont
+in the NTA that is found using the sf 'point on surface' algorithm. This results
+in points that are roughly centered and guaranteed to be in the NTA.
 
 ### Libraries
 ```{r, message=FALSE}
@@ -17,11 +28,17 @@ library(sf)
 
 ### Files
 ```{r, message=FALSE}
+## LODES data
 nys_od <- readr::read_csv('data/ny_od_main_JT00_2019.csv')
+## Areas for all nyc NTAs
 nyc_nta_borders <- sf::st_read('data/nyc_2010_nta_borders.geojson')
+## Dataset to link census tracts with their NTA
 nyc_nta_tract_equiv <- readxl::read_xlsx('data/nyc_2010_census_tract_nta_equiv.xlsx')
 
+## The number of trains that are required for the trip
 subway_lines <- readr::read_csv('data/nta-subway-lines.csv')
+
+## The amount of time taked to travel by subway, car, or foot
 subway_times <- readr::read_csv('data/nta-subway-times.csv')
 driving_times <- readr::read_csv('data/nta-driving-times.csv')
 walking_times <- readr::read_csv('data/nta-walking-times.csv')
@@ -62,85 +79,85 @@ od <- nys_od %>%
   dplyr::rename(h_nta_code = nta_code) %>%
   dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
   dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks) 
-
-od_borders <- od %>%
-  dplyr::left_join(bk_nta_border, c("h_nta_code" = "NTACode")) %>%
-  dplyr::rename(
-    h_shape_area = Shape__Area,
-    h_geometry = geometry
-  ) %>%
-  dplyr::left_join(bk_nta_border, c("w_nta_code" = "NTACode")) %>%
-  dplyr::rename(
-    w_shape_area = Shape__Area,
-    w_geometry = geometry
-  )
-``` 
+```
 
 ## Exploratory data analysis
 
 ### Distribution of job counts
-Job counts normalized for NTA km2    
+The job count of an NTA is equivalent to all of the trips that list the NTA as
+the destination.
+
+Because each NTA has a different area, I felt it made sense to standardized the
+job count to a per square km area value, ie) Jobs/km2.
 ```{r, message = FALSE}
-job_counts <- od_borders %>%
-  dplyr::select(
-    c("w_nta_code", "S000", "w_shape_area", "w_geometry")
-  ) %>%
+job_counts <- od %>%
   dplyr::group_by(w_nta_code) %>%
   dplyr::summarise(
     S000 = sum(S000),
-    w_shape_area,
-    w_geometry
   ) %>%
   unique() %>%
+  dplyr::left_join(
+    bk_nta_border, c("w_nta_code" = "NTACode")
+  ) %>%
   mutate(
-    S000_km2 = S000 / (w_shape_area / 1e6),
+    S000_km2 = S000 / (Shape__Area / 1e6),
     log_S000_km2 = log(S000_km2)
-  ) %>%
-  rename(
-    geometry = w_geometry,
-    shape_area = w_shape_area
-  ) %>%
+  ) %>% 
   sf::st_as_sf()
 ```
 
-Original
+The original distribution of jobs/km2 is skewed to the right.
 ```{r, message=FALSE}
 ggplot(job_counts) +
+  ggtitle("Frequency of job counts for NTAs") +
+  xlab("Jobs per square km") +
+  ylab("Number of NTAs with value") +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = "30")
 ```
 
-Natural log  
+Applying a log transformation to the job count makes it more normal
 ```{r, message=FALSE}
 ggplot(job_counts) +
-  geom_histogram(aes(x = log(S000_km2)), fill = "steelblue", color = "grey", bins = "30")
+  ggtitle("Frequency of the natural log for job counts for NTAs") +
+  xlab("Natural log of jobs per square km") +
+  ylab("Number of NTAs with value") +
+  geom_histogram(aes(x = log_S000_km2), fill = "steelblue", color = "grey", bins = "30")
 ```
 
-Map of natural log
+Maps of job count 
 ```{r, message=FALSE}
-tmap::tm_shape(job_counts) + 
+map_original_jobs <- tmap::tm_shape(job_counts) + 
   tmap::tm_polygons(
-    col = "S000",
+    col = "S000_km2",
     style = "jenks",
-    title = "Job count in NTA"
+    title = "Jobs/km2"
   ) + 
   tmap::tm_layout(
     legend.outside = TRUE
   )
-```
 
-```{r, message=FALSE}
-tmap::tm_shape(job_counts) + 
+map_log_jobs <- tmap::tm_shape(job_counts) + 
   tmap::tm_polygons(
     col = "log_S000_km2",
     style = "jenks",
-    title = "Job count in NTA"
+    title = "Jobs/km2\n(Natural log)"
   ) + 
   tmap::tm_layout(
     legend.outside = TRUE
   )
+
+tmap::tmap_arrange(map_original_jobs, map_log_jobs)
 ```
 ### Distribution of commute counts
+
+Commutes are the number of trips between two distinct NTAs.
+Like Job count, commute count is affected by the size of the NTAs involved in 
+the commute. To standardize the commute count, the total number of commutes
+is divided by the total area of the two NTAs. The resulting unit is commutes/km2.
+
 ```{r, message = FALSE}
+## Use the NTA commute data that is available in any of the infrastructure data
+## (Subway times is an arbitrary choice among the suitable files)
 commute_counts <- subway_times %>%
   dplyr::select(-seconds_in_transit) %>%
   dplyr::left_join(bk_nta_border, c("nta_one" = "NTACode")) %>%
@@ -154,25 +171,30 @@ commute_counts <- subway_times %>%
     geometry_two = geometry
   ) %>%
   dplyr::mutate(
-    S000_km2 = S000 / ((shape_area_one * 1e-6) + (shape_area_two * 1e-6)),
+    S000_km2 = S000 / ((shape_area_one / 1e6) + (shape_area_two / 1e6)),
     log_S000_km2 = log(S000_km2)
   )
 ```
 
-Original
+The original distribution of commute counts is skewed to the right
 ```{r}
 ggplot(commute_counts) +
+  ggtitle("Distribution of commutes") +
+  xlab("Commutes per square km") +
+  ylab("Number of NTA pairs with commute value") +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = 40)
 ```
 
-Natural log
+Using the natural log of commutes makes the data more normal
 ```{r}
 ggplot(data = commute_counts) +
+  ggtitle("Distribution of the natural log of commutes") +
+  xlab("Natural log of commutes per square km") +
+  ylab("Number of NTA pairs with commute value") +
   geom_histogram(aes(x = log_S000_km2), bins = 30, fill = "steelblue", color = "grey")
 ```
 
 ### Number of subway lines and commute count
-Standardized to per square km
 ```{r, message = FALSE}
 subway_lines <- subway_lines %>%
   dplyr::mutate(
@@ -181,26 +203,41 @@ subway_lines <- subway_lines %>%
     log_S000_km2 = commute_counts$log_S000_km2,
   )
 ```
-Original
+
+The number of subway lines that are involved in each trip. If zero subway lines 
+are involved, then a subway route was not available or the available route was
+worse than walking.
 ```{r}
 ggplot(data = subway_lines, aes(x = line_count_ordinal, y = S000_km2)) +
+  ggtitle("Number of commutes for each factor of subway lines") +
+  xlab("Subway lines in trip") +
+  ylab("Commutes per km2") +
   geom_boxplot()
 ```
 
-Transformed
+The number of commutes decreases as the number of lines increases from 0 to 3. 
+The number of commutes is stable between 3 and 4 subway lines.
 ```{r, message = FALSE}
 ggplot(data = subway_lines, aes(x  = line_count_ordinal, y = log_S000_km2)) +
+  ggtitle("Natural log number of commutes for each factor of subway lines") +
+  xlab("Subway lines in trip") +
+  ylab("Natural log of commutes per km2") +
   geom_boxplot()
 ```
 
 ### Subway Transit time and commute count
+Not every route is possible using the subway system. For the linear regression,
+I am interested in the relationship between routes using the infrastructure and 
+the number of trips made. Consequently, for the linear regression, I removed the
+trips where it's not possible or practical to use the subway. This removes 77 routes,
+leaving 1148 routes.
 ```{r, message=FALSE}
 subway_times <- subway_times %>%
   dplyr::mutate(
     log_S000 = log(S000),
     S000_km2 = commute_counts$S000_km2,
     log_S000_km2 = commute_counts$log_S000_km2,
-    i_seconds_in_transit = 1 / seconds_in_transit^(1/8)
+    i_seconds_in_transit = 1 / (seconds_in_transit^(1/8))
   )
 subway_times_connected <- subway_times %>%
   dplyr::filter(
@@ -208,22 +245,39 @@ subway_times_connected <- subway_times %>%
   )
 ```
 
-Original
+There is a non-linear and negative monotonic relationship between the time of
+trip and the number of commutes that are made along this trip.
 ```{r, message = FALSE}
 ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000_km2)) +
   geom_point() +
+  ggtitle("Subway transit time and commutes") +
+  xlab("Seconds in transit") +
+  ylab("Commuts per km2") +
   stat_smooth()
 ```
 
-Transformed
+There appears to be heteroscedasticity. We know from the histogram of commute times
+that the original distribution is skewed to the right. To resolve these issues, we
+again use the natural log of commutes per km2.
+
+We are also interested in creating a positive relationship between time and commutes.
+For this, we take the inverse of time. To remove as much non-linearity as practical,
+we also perform a power transformation, raising time to the power of 1/8.
+
+The result is a data set in which a linear relationship is an acceptable model.
 ```{r, message = FALSE}
 ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000_km2)) +
+  ggtitle("Tranformed subway transit time and natural log of commutes") +
+  xlab("1 / (seconds in transit^(1/8))") +
+  ylab("Natural log of commutes per km2") +
   geom_point() +
   stat_smooth()
 ```
 
 
 ### Driving in traffic time and commute count
+To make driving times consistent with the subway system, we remove the same 77
+data points that were not possible with the subway system.
 ```{r, message=FALSE}
 driving_times <- driving_times %>%
   dplyr::mutate(
@@ -231,28 +285,38 @@ driving_times <- driving_times %>%
     S000_km2 = commute_counts$S000_km2,
     log_S000_km2 = commute_counts$log_S000_km2,
     i_seconds_in_traffic = 1 / seconds_in_traffic^(1/8)
-  ) # %>%
-```
-```
+  )
+
+driving_times_reduced <- driving_times %>%
   dplyr::filter(
     trip %in% subway_times_connected$trip
   )
 ```
-Original
+
+We see a similar pattern to subway time
 ```{r, message = FALSE}
-ggplot(data = driving_times, aes(x = seconds_in_traffic, y = S000_km2)) +
+ggplot(data = driving_times_reduced, aes(x = seconds_in_traffic, y = S000_km2)) +
+  ggtitle("Driving in traffic time and commutes") +
+  xlab("Seconds in traffic")+
+  ylab("Commuts per km2") +
   geom_point() +
   stat_smooth()
 ```
 
-Transformed
+The same transformations for subway trip times are applied to driving in traffic
+times.
 ```{r, message = FALSE}
-ggplot(data = driving_times, aes(x = i_seconds_in_traffic, y = log_S000_km2)) +
+ggplot(data = driving_times_reduced, aes(x = i_seconds_in_traffic, y = log_S000_km2)) +
+  ggtitle("Transformed driving in traffic time and natural log of commutes") +
+  xlab("1/(Seconds in traffic)^(1/8)")+
+  ylab("Natural log of commuts per km2") +
   geom_point() +
   stat_smooth()
 ```
 
 ### Walking time and commute count
+We also remove the 77 points from the walking linear regression and apply the same
+transformations.
 ```{r, message=FALSE}
 walking_times <- walking_times %>%
   dplyr::mutate(
@@ -261,24 +325,28 @@ walking_times <- walking_times %>%
     log_S000_km2 = commute_counts$log_S000_km2,
     i_seconds_of_walking = 1 / seconds_of_walking^(1/8)
   )
-```
-```
-# %>%
+
+walking_times_reduced <- walking_times %>%
   dplyr::filter(
     trip %in% subway_times_connected$trip
   )
 ```
 
-Original
 ```{r, message = FALSE}
-ggplot(data = walking_times, aes(x = seconds_of_walking, y = S000_km2)) +
+ggplot(data = walking_times_reduced, aes(x = seconds_of_walking, y = S000_km2)) +
+  ggtitle("Walking times and commutes") +
+  xlab("Walking time in seconds") +
+  ylab("Commutes per km2") +
   geom_point() +
   stat_smooth()
 ```
 
 Transformed
 ```{r, message = FALSE}
-ggplot(data = walking_times, aes(x = i_seconds_of_walking, y = log_S000_km2)) +
+ggplot(data = walking_times_reduced, aes(x = i_seconds_of_walking, y = log_S000_km2)) +
+  ggtitle("Transformed walking times and natural log of commutes") +
+  xlab("1/(seconds of walking)^(1/8)") +
+  ylab("Commutes per km2") +
   geom_point() +
   stat_smooth()
 ```
@@ -294,14 +362,14 @@ plot(subway_connected_model)
 
 ### Driving
 ```{r, message=FALSE}
-driving_model <- lm(driving_times$log_S000_km2 ~ driving_times$i_seconds_in_traffic)
+driving_model <- lm(driving_times_reduced$log_S000_km2 ~ driving_times_reduced$i_seconds_in_traffic)
 summary(driving_model)
 plot(driving_model)
 ```
 
 ### Walking
 ```{r, message = FALSE}
-walking_model <- lm(walking_times$log_S000_km2 ~ walking_times$i_seconds_of_walking)
+walking_model <- lm(walking_times_reduced$log_S000_km2 ~ walking_times_reduced$i_seconds_of_walking)
 summary(walking_model)
 plot(driving_model)
 ```
@@ -313,37 +381,81 @@ plot(driving_model)
 subway_connected_eq <- function(t) exp(subway_connected_model$coefficients[[1]] + subway_connected_model$coefficients[[2]] / t^(1/8))
 driving_eq <- function(t) exp(driving_model$coefficients[[1]] + driving_model$coefficients[[2]] / t^(1 / 8))
 walking_eq <- function(t) exp(walking_model$coefficients[[1]] + walking_model$coefficients[[2]] / t^(1 / 8))
-
-summary(subway_times_connected$seconds_in_transit)
-summary(driving_times$seconds_in_traffic)
-summary(walking_times$seconds_of_walking)
 ```
 
 ```{r, message = FALSE}
 ggplot(
-  dplyr::data_frame(
+  dplyr::tibble(
     seconds = seq(from = 301, to = 15200, by = 14.9)
   ), aes(seconds)) +
-  stat_function(fun = subway_connected_eq, color = "steelblue", xlim = c(645, 6924)) +
-  stat_function(fun = driving_eq, color = "seagreen", xlim = c(276, 3122)) +
-  stat_function(fun = walking_eq, color = "goldenrod", xlim = c(702, 15171))
+  ggtitle("Predicted commutes for travel times") +
+  xlab("Seconds of commuting") +
+  ylab("Commutes per km2") +
+  stat_function(fun = subway_connected_eq, aes(color = "subway"), xlim = c(min(subway_times_connected$seconds_in_transit), max(subway_times_connected$seconds_in_transit))) +
+  stat_function(fun = driving_eq, aes(color = "driving"), xlim = c(min(driving_times_reduced$seconds_in_traffic), max(driving_times_reduced$seconds_in_traffic))) +
+  stat_function(fun = walking_eq, aes(color = "walking"), xlim = c(min(walking_times_reduced$seconds_of_walking), max(walking_times_reduced$seconds_of_walking))) +
+  scale_color_manual("Mode", values=c("steelblue", "goldenrod", "seagreen"))
 ```
-
-
-Along all axis
-
-Cut to most pivotal times (10 to 50 minutes)
-Table of values at 10, 25, 50
 ```{r, message = FALSE}
+# The 12 minutes is the lowest round minute in each transportation mode's range
+# 50 minutes is a reasonable high end of commute times, in each mode's range.
+
 ggplot(
-  dplyr::data_frame(
-    seconds = seq(from = 720, to = 3000, by = 2.28)
+  dplyr::tibble(
+    seconds = seq(from = 720, to = 3000, by = 14.9)
   ), aes(seconds)) +
-  stat_function(fun = subway_connected_eq, color = "steelblue") +
-  stat_function(fun = driving_eq, color = "seagreen") +
-  stat_function(fun = walking_eq, color = "goldenrod")
+  ggtitle(
+    "Predicted commutes for travel times",
+    subtitle = "Zoom to commutes between 12 and 50 minutes"
+    ) +
+  xlab("Seconds of commuting") +
+  ylab("Commutes per km2") +
+  stat_function(fun = subway_connected_eq, aes(color = "subway")) +
+  stat_function(fun = driving_eq, aes(color = "driving")) +
+  stat_function(fun = walking_eq, aes(color = "walking")) +
+  scale_color_manual("Mode", values=c("steelblue", "goldenrod", "seagreen"))
 ```
+
+Table of values at 10, 25, 50
+```{r}
+times_of_interest <- c(10, 25, 50)*60
+
+## subway predictions
+subway_predictions <- subway_connected_eq(times_of_interest)
+subway_se <- summary(subway_connected_model)$sigma
+subway_pred_low <- subway_predictions - (2*subway_se)
+subway_pred_high <- subway_predictions + (2*subway_se)
+
+## driving predictions
+driving_prediction <- driving_eq(times_of_interest)
+driving_se <- summary(driving_model)$sigma
+driving_pred_low <- driving_predication - (2*driving_se)
+driving_pred_high <- driving_predication + (2*driving_se)
+
+## walking predictions
+walking_predictions <- walking_eq(times_of_interest)
+walking_se <- summary(walking_model)$sigma
+walking_pred_low <- walking_predictions - (2*walking_se)
+walking_pred_high <- walking_predictions + (2*walking_se)
+
+predictions <- dplyr::tibble(
+  Minutes = c("Ten", "Twenty Five", "Fifty"),
+  subway_predictions,
+  subway_pred_low,
+  subway_pred_high,
+  driving_prediction,
+  driving_pred_low,
+  driving_pred_high,
+  walking_predictions,
+  walking_pred_low,
+  walking_pred_high
+)
+
+print(predictions)
+```
+
 ## Auto Correlation of Subway, Driving, and Walking
+
 
 
 ### Global Moran's I
@@ -375,9 +487,6 @@ subway_weights <- subway_graph %>%
   spdep::mat2listw()
 
 driving_weights <- driving_times %>%
-  dplyr::mutate(
-    i_u_seconds_in_traffic = 1 / seconds_in_traffic
-  ) %>%
   dplyr::select(
     c(
       nta_one,
@@ -414,6 +523,10 @@ walking_weights <- walking_times %>%
   ) %>%
   igraph::as_adjacency_matrix(attr = "weight") %>%
   spdep::mat2listw()
+
+queen_weights <- job_counts %>%
+  spdep::poly2nb(c("w_nta_code")) %>%
+  spdep::nb2listw(zero.policy = TRUE)
 ```
 
 #### Subway
@@ -463,6 +576,23 @@ print(walking_global_morans)
 spdep::moran.plot(
   job_counts$log_S000_km2,
   walking_weights,
+  zero.policy = TRUE,
+  xlab = "Job count",
+  ylab = "Lagged job count"
+)
+```
+#### Queens
+```{r, message=FALSE}
+queen_global_morans <- spdep::moran.test(
+  job_counts$log_S000_km2,
+  queen_weights,
+  zero.policy = TRUE,
+)
+print(queen_global_morans)
+
+spdep::moran.plot(
+  job_counts$log_S000_km2,
+  queen_weights,
   zero.policy = TRUE,
   xlab = "Job count",
   ylab = "Lagged job count"
@@ -518,9 +648,17 @@ walking_lisa <- spdep::localmoran(
   na.action = na.omit
 )
 
+queen_lisa <- spdep::localmoran(
+  job_counts$log_S000_km2,
+  queen_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
 subway_classes <- classify_co_types(subway_lisa, job_counts$log_S000_km2, avg_jobs)
 driving_classes <- classify_co_types(driving_lisa, job_counts$log_S000_km2, avg_jobs)
 walking_classes <- classify_co_types(walking_lisa, job_counts$log_S000_km2, avg_jobs)
+queen_classes <- classify_co_types(queen_lisa, job_counts$log_S000_km2, avg_jobs)
 
 subway_bk_nta_border <- bk_nta_border %>%
   dplyr::mutate(
@@ -535,6 +673,11 @@ driving_bk_nta_border <- bk_nta_border %>%
 walking_bk_nta_border <- bk_nta_border %>%
   dplyr::mutate(
     co_type = ifelse(is.na(walking_classes$co_type), "Insignificant", walking_classes$co_type)
+  )
+
+queen_bk_nta_border <- bk_nta_border %>%
+  dplyr::mutate(
+    co_type = ifelse(is.na(queen_classes$co_type), "Insignificant", queen_classes$co_type)
   )
 ```
 
@@ -568,8 +711,7 @@ ggplot(driving_bk_nta_border) +
 ```
 Statistic 
 Plot with major roadways overlayed
-
-#### Walking
+### Walking 
 ```{r, message=FALSE}
 ggplot(walking_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
@@ -581,9 +723,20 @@ ggplot(walking_bk_nta_border) +
     title = "Neighboring job counts"
   )
 ```
-subway
-Statistic
-Plot of local area
+
+### Queen Contiguity
+```{r, message=FALSE}
+ggplot(queen_bk_nta_border) +
+  geom_sf(aes(fill = co_type), col = 'lightgrey') +
+  scale_fill_manual(
+    values = c("red", "NA", "steelblue", "seagreen"),
+    name = "Clusters & \nOutliers"
+  ) +
+  labs(
+    title = "Neighboring job counts"
+  )
+```
+
 #### Network autocorrelation
 
 #### Visualization of network
