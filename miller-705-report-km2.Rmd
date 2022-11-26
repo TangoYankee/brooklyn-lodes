@@ -440,8 +440,8 @@ subway_pred_high <- subway_predictions + (2*subway_se)
 ## driving predictions
 driving_prediction <- driving_eq(times_of_interest)
 driving_se <- summary(driving_model)$sigma
-driving_pred_low <- driving_predication - (2*driving_se)
-driving_pred_high <- driving_predication + (2*driving_se)
+driving_pred_low <- driving_prediction - (2*driving_se)
+driving_pred_high <- driving_prediction + (2*driving_se)
 
 ## walking predictions
 walking_predictions <- walking_eq(times_of_interest)
@@ -705,15 +705,19 @@ queen_bk_nta_border <- bk_nta_border %>%
 
 #### Subway
 ```{r, message=FALSE}
-ggplot(subway_bk_nta_border) +
-  geom_sf(aes(fill = co_type), col = 'lightgrey') +
-  scale_fill_manual(
-    values = c("red", "goldenrod", "NA", "steelblue"),
-    name = "Clusters & \nOutliers"
+tmap::tm_shape(subway_bk_nta_border) +
+  tm_polygons(
+    col = "co_type",
+    palette = c("red", "goldenrod", "lightgrey", "steelblue"),
+    title = "Clusters &\nOutliers"
   ) +
-  labs(
-    title = "Subway connections",
-    subtitle = "Natural log of job counts per square km"
+  tmap::tm_shape(bk_subways) +
+  tmap::tm_lines(
+    col = "rt_symbol",
+    title.col = "Subway Routes"
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE
   )
 ```
 #### Driving
