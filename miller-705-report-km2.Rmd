@@ -42,6 +42,11 @@ subway_lines <- readr::read_csv('data/nta-subway-lines.csv')
 subway_times <- readr::read_csv('data/nta-subway-times.csv')
 driving_times <- readr::read_csv('data/nta-driving-times.csv')
 walking_times <- readr::read_csv('data/nta-walking-times.csv')
+
+## Infrastructure
+nyc_boro_borders <- sf::st_read("./data/boro_boundaries.geojson")
+major_roads <- sf::st_read("./data/DCM_ArterialsMajorStreets.geojson")
+subways <- sf::st_read("./data/subway_lines.geojson")
 ```
 
 ### Data
@@ -79,6 +84,12 @@ od <- nys_od %>%
   dplyr::rename(h_nta_code = nta_code) %>%
   dplyr::select("h_nta_code", "w_nta_code", "S000") %>%
   dplyr::filter(w_nta_code != bk_parks & h_nta_code != bk_parks) 
+
+bk_boro_border <- nyc_boro_borders %>%
+  dplyr::filter(boro_name == bk_name)
+
+bk_subways <- subways %>%
+  sf::st_intersection(bk_boro_border)
 ```
 
 ## Exploratory data analysis
