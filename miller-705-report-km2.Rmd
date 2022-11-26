@@ -90,6 +90,9 @@ bk_boro_border <- nyc_boro_borders %>%
 
 bk_subways <- subways %>%
   sf::st_intersection(bk_boro_border)
+
+bk_major_roads <- major_roads %>%
+  sf::st_intersection(bk_nta_border)
 ```
 
 ## Exploratory data analysis
@@ -722,19 +725,24 @@ tmap::tm_shape(subway_bk_nta_border) +
 ```
 #### Driving
 ```{r, message=FALSE}
-ggplot(driving_bk_nta_border) +
-  geom_sf(aes(fill = co_type), col = 'lightgrey') +
-  scale_fill_manual(
-    values = c("red", "goldenrod", "NA", "steelblue", "seagreen"),
-    name = "Clusters & \nOutliers"
+tmap::tm_shape(driving_bk_nta_border) +
+  tm_polygons(
+    col = "co_type",
+    palette = c("red", "goldenrod", "lightgrey", "steelblue", "seagreen"),
+    title = "Clusters &\nOutliers"
   ) +
-  labs(
-    title = "Driving connections",
-    subtitle = "Natural log of job counts per square km"
+  tmap::tm_shape(bk_major_roads) +
+  tmap::tm_lines(
+    col = "route_type",
+    lwd = 1.2,
+    palette = c("purple", "black"),
+    title.col = "Major strees &\narterials"
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE
   )
 ```
-Statistic 
-Plot with major roadways overlayed
+
 ### Walking 
 ```{r, message=FALSE}
 ggplot(walking_bk_nta_border) +
