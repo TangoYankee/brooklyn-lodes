@@ -21,6 +21,8 @@ in points that are roughly centered and guaranteed to be in the NTA.
 ### Libraries
 ```{r, message=FALSE}
 library(tidyverse)
+library(tidygraph)
+library(ggraph)
 library(igraph)
 library(tmap)
 library(sf)
@@ -38,7 +40,7 @@ nyc_nta_tract_equiv <- readxl::read_xlsx('data/nyc_2010_census_tract_nta_equiv.x
 ## The number of trains that are required for the trip
 subway_lines <- readr::read_csv('data/nta-subway-lines.csv')
 
-## The amount of time taked to travel by subway, car, or foot
+## The amount of time taken to travel by subway, car, or foot
 subway_times <- readr::read_csv('data/nta-subway-times.csv')
 driving_times <- readr::read_csv('data/nta-driving-times.csv')
 walking_times <- readr::read_csv('data/nta-walking-times.csv')
@@ -772,12 +774,124 @@ ggplot(queen_bk_nta_border) +
 ```
 
 #### Network autocorrelation
+```{r, message=FALSE}
+## Utility function that builds the edges between trips
+build_edges <- function(nodes) {
+  edges_from <- vector()
+  edges_to <- vector()
+  nodes_count <- length(nodes)
+  for(i in 1:(nodes_count - 1)) {
+    offset <- i + 1
+    from_node <- nodes[i]
+    from_nta_one <- stringr::str_sub(from_node, 1, 4)
+    from_nta_two <- stringr::str_sub(from_node, 5, 8)
+    for(j in offset:nodes_count){
+      to_node <- nodes[j]
+      are_neighbors <- stringr::str_detect(to_node, from_nta_one) | stringr::str_detect(to_node, from_nta_two)
+      if (are_neighbors) {
+        edges_from <- append(edges_from, from_node)
+        edges_to <- append(edges_to, to_node)
+      }
+    }
+  }
+  return (tibble::tibble(from = edges_from, to = edges_to)) 
+}
+```
 
-#### Visualization of network
+```{r, message=FALSE}
+commute_nodes <- commute_counts %>%
+  dplyr::select(
+    c(trip, log_S000_km2)
+  ) %>%
+  dplyr::rename(
+    name = trip
+  )
+commute_edges <- build_edges(commute_nodes$name)
+commute_network <- tidygraph::tbl_graph(
+  nodes = commute_nodes,
+  edges = commute_edges,
+  directed = FALSE
+)
+```
 
-#### Visualization of network's complement
+#### Visualization of network's complement and most popular trips
+```{r, message=FALSE}
+commute_nodes_top <- commute_nodes %>%
+  dplyr::slice_max(
+    order_by = log_S000_km2,
+    n = 50
+  )
+
+commute_edges_top <- build_edges(commute_nodes_top$name)
+commute_network_top <- tidygraph::tbl_graph(
+  nodes = commute_nodes_top,
+  edges = commute_edges_top,
+  directed = FALSE
+)
+
+total_trips_top = sum(commute_nodes_top$log_S000_km2)
+ggraph::ggraph(
+  commute_network_top,
+  layout = "stress"
+) +
+  geom_edge_link() +
+  geom_node_circle(aes(r = commute_nodes_top$log_S000_km2 / 100), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
+```
 
 #### Global Moran's I
+```{r, message=FALSE}
+commute_weights <- commute_network %>%
+  igraph::as_adj() %>%
+  spdep::mat2listw()
+
+commute_global_morans <- spdep::moran.test(
+  commute_nodes$log_S000_km2,
+  commute_weights,
+  zero.policy = TRUE
+)
+
+print(commute_global_morans)
+
+spdep::moran.plot(
+  commute_nodes$log_S000_km2,
+  commute_weights,
+  zero.policy = TRUE,
+  xlab = "Natural log of commutes/km2",
+  ylab = "Lagged natural log of commutes/km2"
+)
+```
+
 
 #### LISA
-Plot by coloring desire lines
+```{r, message=FALSE}
+commute_lisa <- spdep::localmoran(
+  commute_nodes$log_S000_km2,
+  commute_weights,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
+avg_commute_count <- mean(commute_nodes$log_S000_km2)
+
+commute_classes <- classify_co_types(commute_lisa, commute_nodes$log_S000_km2, avg_commute_count)
+
+commute_network_cluster <- commute_network %>%
+  tidygraph::activate(nodes) %>%
+  dplyr::mutate(
+    co_type  = commute_classes$co_type %>% tidyr::replace_na("Insignificant")
+  )
+
+commute_network_cluster_sig <- commute_network_cluster %>%
+  dplyr::filter(co_type != "Insignificant")
+```
+
+```{r, message=FALSE}
+ggraph::ggraph(
+  commute_network_cluster_sig,
+  layout = "stress"
+) +
+  ggraph::geom_node_circle(
+    aes(r = 0.025, color = co_type)
+  )
+```
