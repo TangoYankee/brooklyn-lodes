@@ -1,7 +1,7 @@
 ---
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 # November 28th project update
 
@@ -61,6 +61,12 @@ bk_nta_border <- nyc_nta_borders %>%
   dplyr::filter(BoroName == bk_name)  %>%
   dplyr::filter(NTACode != bk_parks) %>%
   dplyr::select("NTACode", "Shape__Area")
+
+bk_nta_centers <- bk_nta_border %>%
+  dplyr::mutate(
+    geometry = sf::st_point_on_surface(geometry)
+  ) %>%
+  dplyr::select(NTACode)
 
 bk_nta_tract_equiv <- nyc_nta_tract_equiv %>%
   dplyr::filter(borough_name == bk_name) %>%
@@ -773,7 +779,7 @@ ggplot(queen_bk_nta_border) +
   )
 ```
 
-#### Network autocorrelation
+### Network autocorrelation
 ```{r, message=FALSE}
 ## Utility function that builds the edges between trips
 build_edges <- function(nodes) {
@@ -888,10 +894,40 @@ commute_network_cluster_sig <- commute_network_cluster %>%
 
 ```{r, message=FALSE}
 ggraph::ggraph(
-  commute_network_cluster_sig,
+  commute_network_cluster,
   layout = "stress"
 ) +
   ggraph::geom_node_circle(
-    aes(r = 0.025, color = co_type)
+    aes(r = log_S000_km2 / 75, color = co_type)
+    ) +
+  scale_color_manual(values = c("red", "goldenrod", "black", "steelblue", "seagreen"))
+ 
+```
+
+```{r, message=FALSE}
+commute_count_lines <- commute_counts %>%
+  dplyr::mutate(
+    center_one = sf::st_point_on_surface(geometry_one),
+    center_two = sf::st_point_on_surface(geometry_two)
+  ) %>%
+  dplyr::mutate(
+    geometry = sf::st_cast(sf::st_union(center_one, center_two), "LINESTRING")
+  ) %>%
+  dplyr::select(
+    c(trip, log_S000_km2, geometry)
+  ) %>%
+  sf::st_as_sf() %>%
+  dplyr::mutate(
+    co_type  = commute_classes$co_type %>% tidyr::replace_na("Insignificant")
+  ) 
+```
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("red", "goldenrod", "white", "steelblue", "seagreen") 
   )
 ```
