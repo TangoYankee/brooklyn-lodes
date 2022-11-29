@@ -33,7 +33,7 @@ library(sf)
 ## LODES data
 nys_od <- readr::read_csv('data/ny_od_main_JT00_2019.csv')
 ## Areas for all nyc NTAs
-nyc_nta_borders <- sf::st_read('data/nyc_2010_nta_borders.geojson')
+nyc_nta_borders <- sf::st_read('data/nyc_2010_nta_borders.geojson') %>% sf::st_set_crs(2263)
 ## Dataset to link census tracts with their NTA
 nyc_nta_tract_equiv <- readxl::read_xlsx('data/nyc_2010_census_tract_nta_equiv.xlsx')
 
@@ -46,9 +46,9 @@ driving_times <- readr::read_csv('data/nta-driving-times.csv')
 walking_times <- readr::read_csv('data/nta-walking-times.csv')
 
 ## Infrastructure
-nyc_boro_borders <- sf::st_read("./data/boro_boundaries.geojson")
-major_roads <- sf::st_read("./data/DCM_ArterialsMajorStreets.geojson")
-subways <- sf::st_read("./data/subway_lines.geojson")
+nyc_boro_borders <- sf::st_read("./data/boro_boundaries.geojson") %>% sf::st_set_crs(2263)
+major_roads <- sf::st_read("./data/DCM_ArterialsMajorStreets.geojson") %>% sf::st_set_crs(2263)
+subways <- sf::st_read("./data/subway_lines.geojson") %>% sf::st_set_crs(2263)
 ```
 
 ### Data
