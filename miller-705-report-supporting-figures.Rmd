@@ -15,6 +15,7 @@ library(igraph)
 library(tmap)
 library(sf)
 library(RColorBrewer)
+library(patchwork)
 options(scipen = 999)
 ```
 
@@ -116,15 +117,17 @@ job_counts <- od %>%
 ```
 
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Frequency of job counts in each NTAs, standardized by the area of the NTA"}
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of job counts in each NTAs, standardized by the area of the NTA."}
+
 ggplot(job_counts) +
   ggtitle("Frequency of job counts for NTAs") +
   xlab("Jobs per square km") +
   ylab("Number of NTAs with value") +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = "30")
+
 ```
 
-```{r, message=FALSE, echo=FALSE, warning=FALSE, fig.cap="Frequency of natural log for job counts in each NTA, standardized by the area of the NTA"}
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of job counts in each NTAs, standardized by the area of the NTA and tranformed with a natural log."}
 ggplot(job_counts) +
   ggtitle("Frequency of the natural log for job counts for NTAs") +
   xlab("Natural log of jobs per square km") +
@@ -137,7 +140,7 @@ ggplot(job_counts) +
 S000_count_colors = "BuGn"
 ```
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. It is standardized by the total area of the NTA. It is also transformed with a natural log."}
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 13, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. It is standardized by the total area of the NTA. It is also transformed with a natural log."}
 
 ## Map of job counts in NTAs
 tmap::tm_shape(job_counts) + 
@@ -174,7 +177,8 @@ commute_counts <- subway_times %>%
   )
 ```
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Frequency of commute counts, standardized by the sum of the areas of the commute's origin and destination NTAs"}
+
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of commute counts, standardized by the sum of the areas of the commute's origin and destination NTAs"}
 ggplot(commute_counts) +
   ggtitle("Distribution of commutes") +
   xlab("Commutes per square km") +
@@ -182,13 +186,15 @@ ggplot(commute_counts) +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = 40)
 ```
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Frequency of the natural log of commute counts, standardized by the sum of the areas of the commute's origin and destination NTAs"}
+
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of the natural log of commute counts, standardized by the sum of the areas of the commute's origin and destination NTAs"}
 ggplot(data = commute_counts) +
   ggtitle("Distribution of the natural log of commutes") +
   xlab("Natural log of commutes per square km") +
   ylab("Number of NTA pairs with commute value") +
   geom_histogram(aes(x = log_S000_km2), bins = 30, fill = "steelblue", color = "grey")
 ```
+
 
 ```{r, message = FALSE, echo=FALSE}
 ### Number of subway lines and commute count
@@ -200,7 +206,8 @@ subway_lines <- subway_lines %>%
   )
 ```
 
-```{r, message=FALSE, echo=FALSE, fig.cap="Boxplot for the number of commutes, factored by the number of subway lines used during the commute. Commutes are transformed by a natural log and standardized by area"}
+
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 13, fig.cap="Boxplot for the number of commutes, factored by the number of subway lines used during the commute. Commutes are transformed by a natural log and standardized by area"}
 
 ### Boxplot for subway line count
 
@@ -230,7 +237,8 @@ subway_times_connected <- subway_times %>%
   )
 ```
 
-```{r, message = FALSE, echo=FALSE, fig.cap="Time in transit on the subway plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time in transit on the subway plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
+
 ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000_km2)) +
   geom_point() +
   ggtitle("Subway transit time and commutes") +
@@ -240,13 +248,25 @@ ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000_km2))
 ```
 
 
-```{r, message = FALSE, echo=FALSE, fig.cap="Time in subway transit is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time in subway transit is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
+
 ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000_km2)) +
   ggtitle("Tranformed subway transit time and natural log of commutes") +
   xlab("1 / (seconds in transit^(1/8))") +
   ylab("Natural log of commutes per km2") +
   geom_point() +
   stat_smooth()
+```
+
+```{r, message=FALSE, echo=FALSE, fig.width=10, fig.height=12, results='hide', fig.cap="Diagnostic plots for the model of transformed subway transit time"}
+
+### Subway model
+subway_connected_model <- lm(subway_times_connected$log_S000_km2 ~ subway_times_connected$i_seconds_in_transit)
+summary(subway_connected_model)
+
+## diagnostic plots
+par(mfrow=c(2,2))
+plot(subway_connected_model, which = 1:4)
 ```
 
 
@@ -268,7 +288,7 @@ driving_times_reduced <- driving_times %>%
 ```
 
 
-```{r, message = FALSE, echo=FALSE, fig.cap="Time driving in traffic plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time driving in traffic plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
 
 ggplot(data = driving_times_reduced, aes(x = seconds_in_traffic, y = S000_km2)) +
   ggtitle("Driving in traffic time and commutes") +
@@ -278,7 +298,7 @@ ggplot(data = driving_times_reduced, aes(x = seconds_in_traffic, y = S000_km2)) 
   stat_smooth()
 ```
 
-```{r, message = FALSE, echo=FALSE, fig.cap="Time driving in traffic is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time driving in traffic is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
 
 ggplot(data = driving_times_reduced, aes(x = i_seconds_in_traffic, y = log_S000_km2)) +
   ggtitle("Transformed driving in traffic time and natural log of commutes") +
@@ -288,10 +308,19 @@ ggplot(data = driving_times_reduced, aes(x = i_seconds_in_traffic, y = log_S000_
   stat_smooth()
 ```
 
+```{r, message=FALSE, echo=FALSE, fig.width=10, fig.height=12, results='hide', fig.cap="Diagnostic plots for the model of transformed driving time"}
+## Driving linear model
+driving_model <- lm(driving_times_reduced$log_S000_km2 ~ driving_times_reduced$i_seconds_in_traffic)
+summary(driving_model)
+
+par(mfrow=c(2,2))
+plot(driving_model, which = 1:4)
+```
+
+```{r, message=FALSE, echo=FALSE}
+
 ### Walking time and commute count
-We also remove the 77 points from the walking linear regression and apply the same
-transformations.
-```{r, message=FALSE}
+
 walking_times <- walking_times %>%
   dplyr::mutate(
     log_S000 = log(S000),
@@ -306,7 +335,7 @@ walking_times_reduced <- walking_times %>%
   )
 ```
 
-```{r, message = FALSE}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time spent walking plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
 ggplot(data = walking_times_reduced, aes(x = seconds_of_walking, y = S000_km2)) +
   ggtitle("Walking times and commutes") +
   xlab("Walking time in seconds") +
@@ -315,8 +344,8 @@ ggplot(data = walking_times_reduced, aes(x = seconds_of_walking, y = S000_km2)) 
   stat_smooth()
 ```
 
-Transformed
-```{r, message = FALSE}
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time spent walking is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
+
 ggplot(data = walking_times_reduced, aes(x = i_seconds_of_walking, y = log_S000_km2)) +
   ggtitle("Transformed walking times and natural log of commutes") +
   xlab("1/(seconds of walking)^(1/8)") +
@@ -325,39 +354,26 @@ ggplot(data = walking_times_reduced, aes(x = i_seconds_of_walking, y = log_S000_
   stat_smooth()
 ```
 
-## Regression of Subway, Driving, and walking
 
-### Subway model
-```{r, message=FALSE}
-subway_connected_model <- lm(subway_times_connected$log_S000_km2 ~ subway_times_connected$i_seconds_in_transit)
-summary(subway_connected_model)
-plot(subway_connected_model)
-```
-
-### Driving
-```{r, message=FALSE}
-driving_model <- lm(driving_times_reduced$log_S000_km2 ~ driving_times_reduced$i_seconds_in_traffic)
-summary(driving_model)
-plot(driving_model)
-```
+```{r, message=FALSE, echo=FALSE, fig.width=10, fig.height=12, results='hide', fig.cap="Diagnostic plots for the model of transformed walking time"}
 
 ### Walking
-```{r, message = FALSE}
 walking_model <- lm(walking_times_reduced$log_S000_km2 ~ walking_times_reduced$i_seconds_of_walking)
 summary(walking_model)
-plot(driving_model)
+
+
+par(mfrow=c(2,2))
+plot(driving_model, which = 1:4)
 ```
 
-### Multiple linear regression for all three factors
-
-### Equations plotted for all factors
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE}
 subway_connected_eq <- function(t) exp(subway_connected_model$coefficients[[1]] + subway_connected_model$coefficients[[2]] / t^(1/8))
 driving_eq <- function(t) exp(driving_model$coefficients[[1]] + driving_model$coefficients[[2]] / t^(1 / 8))
 walking_eq <- function(t) exp(walking_model$coefficients[[1]] + walking_model$coefficients[[2]] / t^(1 / 8))
 ```
 
-```{r, message = FALSE}
+
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Models for transporation modes. Each model is only plotted from their minimum to maximum observed travel time."}
 ggplot(
   dplyr::tibble(
     seconds = seq(from = 301, to = 15200, by = 14.9)
@@ -370,7 +386,9 @@ ggplot(
   stat_function(fun = walking_eq, aes(color = "walking"), xlim = c(min(walking_times_reduced$seconds_of_walking), max(walking_times_reduced$seconds_of_walking))) +
   scale_color_manual("Mode", values=c("steelblue", "goldenrod", "seagreen"))
 ```
-```{r, message = FALSE}
+
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Models of transportation modes, zoomed on the range of 12min to 50mins. This range is seen in the travel time values for each transportation mode."}
+
 # The 12 minutes is the lowest round minute in each transportation mode's range
 # 50 minutes is a reasonable high end of commute times, in each mode's range.
 
@@ -390,9 +408,9 @@ ggplot(
   scale_color_manual("Mode", values=c("steelblue", "goldenrod", "seagreen"))
 ```
 
-Table of values at 10, 25, 50
-```{r}
-times_of_interest <- c(10, 25, 50)*60
+
+```{r, message=FALSE, echo=FALSE}
+times_of_interest <- c(12, 25, 50)*60
 
 ## subway predictions
 subway_predictions <- subway_connected_eq(times_of_interest)
@@ -428,22 +446,11 @@ predictions <- dplyr::tibble(
 print(predictions)
 ```
 
-## Auto Correlation of Subway, Driving, and Walking
 
-The data points removed for the linear regression are returned for the 
-correlation. For driving and walking, they are returned without further modification.
-For the subway analysis, any trips that were made without using the subway are
-giving a value of 0. This reflects that the two NTAs involved in the trip are
-not actually neighbors through the subway definition.
-
-In addition to the three infrastructure neighborhood definitions, a Queens
-contiguity analysis is run for reference.
-
-The natural log of job counts per km2 is used as the value for each NTA.
-
+```{r, message = FALSE, echo=FALSE}
 
 ### Global Moran's I
-```{r, message = FALSE}
+
 subway_times <- subway_times %>%
   dplyr::mutate(
     i_c_seconds_in_transit = ifelse(subway_lines$line_count > 0, i_seconds_in_transit, 0),
@@ -513,8 +520,11 @@ queen_weights <- job_counts %>%
   spdep::nb2listw(zero.policy = TRUE)
 ```
 
+
+```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using subway transit time for neighborhood wieghts"}
+
 #### Subway
-```{r, message=FALSE}
+
 subway_global_morans <- spdep::moran.test(
   job_counts$log_S000_km2,
   subway_weights,
@@ -530,8 +540,11 @@ spdep::moran.plot(
   ylab = "Lagged natural log jobs/km2"
 )
 ```
+
+```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
+
 #### Driving
-```{r, message=FALSE}
+
 driving_global_morans <- spdep::moran.test(
   job_counts$log_S000_km2,
   driving_weights,
@@ -548,8 +561,11 @@ spdep::moran.plot(
 )
 ```
 
+
+```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using walking time for neighborhood wieghts"}
+
 #### Walking
-```{r, message=FALSE}
+
 walking_global_morans <- spdep::moran.test(
   job_counts$log_S000_km2,
   walking_weights,
@@ -565,8 +581,12 @@ spdep::moran.plot(
   ylab = "Lagged natural log jobs/km2"
 )
 ```
+
+
+```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using queens contiguity for neighborhood wieghts"}
+
 #### Queens
-```{r, message=FALSE}
+
 queen_global_morans <- spdep::moran.test(
   job_counts$log_S000_km2,
   queen_weights,
@@ -583,8 +603,10 @@ spdep::moran.plot(
 )
 ```
 
+```{r, message=FALSE, echo=FALSE, results='hide'}
+
 ### LISA
-```{r, message=FALSE}
+
 avg_jobs <- mean(job_counts$log_S000_km2)
 
 classify_co_types <- function(mode_lisa, l_job_counts, avg_job_count) {
@@ -666,8 +688,10 @@ queen_bk_nta_border <- bk_nta_border %>%
 ```
 
 
+```{r, message=FALSE, echo=FALSE}
+
 #### Subway
-```{r, message=FALSE}
+
 tmap::tm_shape(subway_bk_nta_border) +
   tm_polygons(
     col = "co_type",
@@ -683,8 +707,10 @@ tmap::tm_shape(subway_bk_nta_border) +
     legend.outside = TRUE
   )
 ```
+```{r, message=FALSE, echo=FALSE}
+
 #### Driving
-```{r, message=FALSE}
+
 tmap::tm_shape(driving_bk_nta_border) +
   tm_polygons(
     col = "co_type",
@@ -703,8 +729,10 @@ tmap::tm_shape(driving_bk_nta_border) +
   )
 ```
 
+```{r, message=FALSE, echo=FALSE}
+
 ### Walking 
-```{r, message=FALSE}
+
 ggplot(walking_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
   scale_fill_manual(
@@ -717,8 +745,11 @@ ggplot(walking_bk_nta_border) +
   )
 ```
 
+
+```{r, message=FALSE, echo=FALSE}
+
 ### Queen Contiguity
-```{r, message=FALSE}
+
 ggplot(queen_bk_nta_border) +
   geom_sf(aes(fill = co_type), col = 'lightgrey') +
   scale_fill_manual(
@@ -731,8 +762,10 @@ ggplot(queen_bk_nta_border) +
   )
 ```
 
+
+```{r, message=FALSE, echo=FALSE}
+
 ### Network autocorrelation
-```{r, message=FALSE}
 ## Utility function that builds the edges between trips
 build_edges <- function(nodes) {
   edges_from <- vector()
@@ -756,7 +789,8 @@ build_edges <- function(nodes) {
 }
 ```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 commute_nodes <- commute_counts %>%
   dplyr::select(
     c(trip, log_S000_km2)
@@ -772,8 +806,9 @@ commute_network <- tidygraph::tbl_graph(
 )
 ```
 
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 #### Visualization of network's complement and most popular trips
-```{r, message=FALSE}
 commute_nodes_top <- commute_nodes %>%
   dplyr::slice_max(
     order_by = log_S000_km2,
@@ -797,32 +832,10 @@ ggraph::ggraph(
   geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
 ```
 
-```{r, message=FALSE}
-commute_nodes_bottom <- commute_nodes %>%
-  dplyr::slice_min(
-    order_by = log_S000_km2,
-    n = 62
-  )
 
-commute_edges_bottom <- build_edges(commute_nodes_bottom$name)
-commute_network_bottom <- tidygraph::tbl_graph(
-  nodes = commute_nodes_bottom,
-  edges = commute_edges_bottom,
-  directed = FALSE
-)
 
-total_trips_bottom = sum(commute_nodes_bottom$log_S000_km2)
-ggraph::ggraph(
-  commute_network_bottom,
-  layout = "stress"
-) +
-  geom_edge_link() +
-  geom_node_circle(aes(r = commute_nodes_bottom$log_S000_km2 / 100), fill = "blue") +
-  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
-```
-
+```{r, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
 #### Global Moran's I
-```{r, message=FALSE}
 commute_weights <- commute_network %>%
   igraph::as_adj() %>%
   spdep::mat2listw()
@@ -845,8 +858,8 @@ spdep::moran.plot(
 ```
 
 
+```{r, message=FALSE, echo=FALSE}
 #### LISA
-```{r, message=FALSE}
 commute_lisa <- spdep::localmoran(
   commute_nodes$log_S000_km2,
   commute_weights,
@@ -868,19 +881,9 @@ commute_network_cluster_sig <- commute_network_cluster %>%
   dplyr::filter(co_type != "Insignificant")
 ```
 
-```{r, message=FALSE}
-ggraph::ggraph(
-  commute_network_cluster,
-  layout = "stress"
-) +
-  ggraph::geom_node_circle(
-    aes(r = log_S000_km2 / 75, color = co_type)
-    ) +
-  scale_color_manual(values = c("red", "goldenrod", "black", "steelblue", "seagreen"))
- 
-```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 commute_count_lines <- commute_counts %>%
   dplyr::mutate(
     center_one = sf::st_point_on_surface(geometry_one),
@@ -897,7 +900,9 @@ commute_count_lines <- commute_counts %>%
     co_type  = commute_classes$co_type %>% tidyr::replace_na("Insignificant")
   ) 
 ```
-```{r, message=FALSE}
+
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -908,7 +913,8 @@ tmap::tm_shape(bk_nta_border) +
   )
 ```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -918,7 +924,8 @@ tmap::tm_shape(bk_nta_border) +
     palette = c("red") 
   )
 ```
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -929,7 +936,8 @@ tmap::tm_shape(bk_nta_border) +
   )
 ```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -940,7 +948,8 @@ tmap::tm_shape(bk_nta_border) +
   )
 ```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -950,7 +959,8 @@ tmap::tm_shape(bk_nta_border) +
     palette = c("steelblue") 
   )
 ```
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
@@ -961,7 +971,8 @@ tmap::tm_shape(bk_nta_border) +
   )
 ```
 
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 commute_count_lines_top <- commute_count_lines %>%
   dplyr::slice_max(
     order_by = log_S000_km2,
@@ -977,7 +988,8 @@ commute_count_lines_top <- commute_count_lines %>%
     palette = c("red", "goldenrod", "black") 
   ) 
 ```
-```{r, message=FALSE}
+
+```{r, message=FALSE, echo=FALSE}
 commute_network_top_clusters <- igraph::cluster_fast_greedy(commute_network_top)
 
 commute_count_lines_top_clusters <- commute_count_lines_top %>%
@@ -992,22 +1004,5 @@ tmap::tm_shape(bk_nta_border) +
   tmap::tm_lines(
     col = "membership",
     palette = brewer.pal(3, "Dark2") 
-  ) 
-```
-
-```{r, message=FALSE}
-commute_count_lines_bottom <- commute_count_lines %>%
-  dplyr::slice_min(
-    order_by = log_S000_km2,
-    n = 62
-  )
-
- tmap::tm_shape(bk_nta_border) +
-  tmap::tm_polygons(
-    col = "#eeeeee"
-  ) + tmap::tm_shape(commute_count_lines_bottom) +
-  tmap::tm_lines(
-    col = "co_type",
-    palette = c("black", "seagreen") 
   ) 
 ```
