@@ -18,6 +18,7 @@ library(RColorBrewer)
 options(scipen = 999)
 ```
 
+
 ```{r, message=FALSE, echo=FALSE, results='hide'}
 ### Import Files
 
@@ -41,6 +42,7 @@ nyc_boro_borders <- sf::st_read("./data/boro_boundaries.geojson")
 major_roads <- sf::st_read("./data/DCM_ArterialsMajorStreets.geojson")
 subways <- sf::st_read("./data/subway_lines.geojson")
 ```
+
 
 ```{r, message=FALSE, echo=FALSE, results='hide', warning=FALSE}
 
@@ -96,6 +98,7 @@ bk_major_roads <- major_roads %>%
   sf::st_intersection(bk_nta_border)
 ```
 
+    
 ```{r, message = FALSE, echo=FALSE, results='hide', warning=FALSE}
 
 ### Distribution of job counts
@@ -125,7 +128,6 @@ ggplot(job_counts) +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = "30")
 
 ```
-
 ```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of job counts in each NTAs, standardized by the area of the NTA and tranformed with a natural log."}
 ggplot(job_counts) +
   ggtitle("Frequency of the natural log for job counts for NTAs") +
@@ -134,12 +136,14 @@ ggplot(job_counts) +
   geom_histogram(aes(x = log_S000_km2), fill = "steelblue", color = "grey", bins = "30")
 ```
 
+
 ```{r, message=FALSE, echo=FALSE}
 ## Constant for color palette
 S000_count_colors = "BuGn"
 ```
 
-```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 13, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. It is standardized by the total area of the NTA. It is also transformed with a natural log."}
+
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 12, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. It is standardized by the total area of the NTA. It is also transformed with a natural log."}
 
 ## Map of job counts in NTAs
 tmap::tm_shape(job_counts) + 
@@ -206,7 +210,7 @@ subway_lines <- subway_lines %>%
 ```
 
 
-```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 13, fig.cap="Boxplot for the number of commutes, factored by the number of subway lines used during the commute. Commutes are transformed by a natural log and standardized by area"}
+```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 12, fig.cap="Boxplot for the number of commutes, factored by the number of subway lines used during the commute. Commutes are transformed by a natural log and standardized by area"}
 
 ### Boxplot for subway line count
 
@@ -236,6 +240,7 @@ subway_times_connected <- subway_times %>%
   )
 ```
 
+
 ```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time in transit on the subway plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
 
 ggplot(data = subway_times_connected, aes(x = seconds_in_transit, y = S000_km2)) +
@@ -256,6 +261,7 @@ ggplot(data = subway_times_connected, aes(x = i_seconds_in_transit, y = log_S000
   geom_point() +
   stat_smooth()
 ```
+
 
 ```{r, message=FALSE, echo=FALSE, fig.width=10, fig.height=12, results='hide', fig.cap="Diagnostic plots for the model of transformed subway transit time"}
 
@@ -307,6 +313,7 @@ ggplot(data = driving_times_reduced, aes(x = i_seconds_in_traffic, y = log_S000_
   stat_smooth()
 ```
 
+  
 ```{r, message=FALSE, echo=FALSE, fig.width=10, fig.height=12, results='hide', fig.cap="Diagnostic plots for the model of transformed driving time"}
 ## Driving linear model
 driving_model <- lm(driving_times_reduced$log_S000_km2 ~ driving_times_reduced$i_seconds_in_traffic)
@@ -368,6 +375,7 @@ par(mfrow=c(2,2))
 plot(driving_model, which = 1:4)
 ```
 
+  
 ```{r, message=FALSE, echo=FALSE}
 subway_connected_eq <- function(t) exp(subway_connected_model$coefficients[[1]] + subway_connected_model$coefficients[[2]] / t^(1/8))
 driving_eq <- function(t) exp(driving_model$coefficients[[1]] + driving_model$coefficients[[2]] / t^(1 / 8))
@@ -388,6 +396,7 @@ ggplot(
   stat_function(fun = walking_eq, aes(color = "walking"), xlim = c(min(walking_times_reduced$seconds_of_walking), max(walking_times_reduced$seconds_of_walking))) +
   scale_color_manual("Mode", values=c("steelblue", "goldenrod", "seagreen"))
 ```
+
 
 ```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Models of transportation modes, zoomed on the range of 12min to 50mins. This range is seen in the travel time values for each transportation mode."}
 
@@ -543,6 +552,7 @@ spdep::moran.plot(
 )
 ```
 
+
 ```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
 
 #### Driving
@@ -604,6 +614,7 @@ spdep::moran.plot(
   ylab = "Lagged natural log jobs/km2"
 )
 ```
+
 
 ```{r, message=FALSE, echo=FALSE, results='hide'}
 
@@ -689,6 +700,7 @@ queen_bk_nta_border <- bk_nta_border %>%
   )
 ```
 
+
 ```{r, message=FALSE, echo=FALSE}
 
 ### Queen Contiguity
@@ -769,7 +781,7 @@ walking_map <- tmap::tm_shape(walking_bk_nta_border) +
 ```
 
 
-```{r, message=FALSE, echo=FALSE, warning = FALSE, fig.width=10, fig.height=13, fig.cap="Local auto-correlation for job count of NTAs. Each map utilizes a unique neighborhood weighting. Top left uses queen contiguity. Top right uses driving time in traffic and is overlayed with major roads. Bottom left uses walking time. Bottom right uses transit time on the subway and is overlayed with the subway network."}
+```{r, message=FALSE, echo=FALSE, warning = FALSE, fig.width=10, fig.height=12, fig.cap="Local auto-correlation for job count of NTAs. Each map utilizes a unique neighborhood weighting. Top left uses queen contiguity. Top right uses driving time in traffic and is overlayed with major roads. Bottom left uses walking time. Bottom right uses transit time on the subway and is overlayed with the subway network."}
 
 tmap::tmap_arrange(queen_map, driving_map, walking_map, subway_map, nrow = 2, ncol = 2)
 
@@ -821,34 +833,7 @@ commute_network <- tidygraph::tbl_graph(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, warning=FALSE}
-#### Visualization of network's complement and most popular trips
-commute_nodes_top <- commute_nodes %>%
-  dplyr::slice_max(
-    order_by = log_S000_km2,
-    n = 62
-  )
-
-commute_edges_top <- build_edges(commute_nodes_top$name)
-commute_network_top <- tidygraph::tbl_graph(
-  nodes = commute_nodes_top,
-  edges = commute_edges_top,
-  directed = FALSE
-)
-
-total_trips_top = sum(commute_nodes_top$log_S000_km2)
-ggraph::ggraph(
-  commute_network_top,
-  layout = "stress"
-) +
-  geom_edge_link() +
-  geom_node_circle(aes(r = commute_nodes_top$log_S000_km2 / 100), fill = "blue") +
-  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
-```
-
-
-
-```{r, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
+```{r, message=FALSE, echo=FALSE, warning=FALSE, results='hide', fig.width=10, fig.height=12, fig.cap="Global auto-correlation of commute network"}
 #### Global Moran's I
 commute_weights <- commute_network %>%
   igraph::as_adj() %>%
@@ -917,72 +902,111 @@ commute_count_lines <- commute_counts %>%
 
 
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+all_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("red", "goldenrod", "white", "steelblue", "seagreen") 
+    palette = c("red", "goldenrod", "white", "steelblue", "seagreen"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
   )
 ```
 
 
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+hh_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "HH")) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("red") 
-  )
+    palette = c("red"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
+    )
 ```
 
+
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+hl_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "HL")) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("goldenrod") 
-  )
+    palette = c("goldenrod"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
+    )
 ```
 
 
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+insig_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "Insignificant")) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("black") 
-  )
+    palette = c("black"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
+    )
 ```
 
 
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+lh_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "LH")) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("steelblue") 
-  )
+    palette = c("steelblue"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
+    )
 ```
 
+
 ```{r, message=FALSE, echo=FALSE}
-tmap::tm_shape(bk_nta_border) +
+ll_auto <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "LL")) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("seagreen") 
-  )
+    palette = c("seagreen"),
+    title.col = ""
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 1,
+    )
+```
+
+
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=12, fig.cap="Local autocorrelation for commute network. Top left map shows all confidence types on one map. Top right shows Insignificant clusters. Middle left shows High High clusters. Middle right shows High Low clusters. Bottom left shows Low High clusters. Bottom right shows Low Low clusters"}
+
+tmap::tmap_arrange(all_auto, insig_auto, hh_auto, hl_auto, lh_auto, ll_auto, nrow = 3, ncol = 2)
+
 ```
 
 
@@ -993,30 +1017,72 @@ commute_count_lines_top <- commute_count_lines %>%
     n = 62
   ) 
 
- tmap::tm_shape(bk_nta_border) +
+ top_cotype <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#eeeeee"
   ) + tmap::tm_shape(commute_count_lines_top) +
   tmap::tm_lines(
     col = "co_type",
-    palette = c("red", "goldenrod", "black") 
+    palette = c("red", "goldenrod", "black"),
+    title.col = "Confidence Type"
   ) 
 ```
 
-```{r, message=FALSE, echo=FALSE}
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE, fig.width=10, fig.height=6, fig.cap="Graph of the top 5% most popular commutes through brooklyn and their interactions with each other. The color of the node reflects its membership in one of three clusters"}
+
+#### Visualization of network's complement and most popular trips
+commute_nodes_top <- commute_nodes %>%
+  dplyr::slice_max(
+    order_by = log_S000_km2,
+    n = 62
+  )
+
+commute_edges_top <- build_edges(commute_nodes_top$name)
+commute_network_top <- tidygraph::tbl_graph(
+  nodes = commute_nodes_top,
+  edges = commute_edges_top,
+  directed = FALSE
+)
+
 commute_network_top_clusters <- igraph::cluster_fast_greedy(commute_network_top)
+
+total_trips_top = sum(commute_nodes_top$log_S000_km2)
+ggraph::ggraph(
+  commute_network_top,
+  layout = "stress"
+) +
+  geom_edge_link() +
+  geom_node_circle(aes(r = commute_nodes_top$log_S000_km2 / 75, fill = as.character(commute_network_top_clusters$membership))) +
+  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE) +
+  scale_fill_manual(
+    values = brewer.pal(3, "Dark2"),
+    name = "Cluster "
+    )
+```
+
+
+```{r, message=FALSE, echo=FALSE}
 
 commute_count_lines_top_clusters <- commute_count_lines_top %>%
   dplyr::mutate(
     membership = as.character(commute_network_top_clusters$membership)
   )
 
-tmap::tm_shape(bk_nta_border) +
+top_cluster <- tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
     col = "#f9f9f9"
   ) + tmap::tm_shape(commute_count_lines_top_clusters) +
   tmap::tm_lines(
     col = "membership",
-    palette = brewer.pal(3, "Dark2") 
+    palette = brewer.pal(3, "Dark2"),
+    title.col = "Cluster"
   ) 
+```
+
+
+```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Geospatial distribution of the top 5% most popular commutes through brooklyn. Left diagram is the confidence type of the commute. Right diagram is commute's membership in the network cluster"}
+
+tmap::tmap_arrange(top_cotype, top_cluster)
+
 ```
