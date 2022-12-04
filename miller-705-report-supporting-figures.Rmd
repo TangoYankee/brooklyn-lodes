@@ -55,7 +55,10 @@ bk_parks <- "BK99"
 bk_nta_border <- nyc_nta_borders %>%
   dplyr::filter(BoroName == bk_name)  %>%
   dplyr::filter(NTACode != bk_parks) %>%
-  dplyr::select("NTACode", "Shape__Area")
+  dplyr::select("NTACode", "Shape__Area") %>%
+  dplyr::arrange(
+    order_by = NTACode
+  )
 
 bk_nta_centers <- bk_nta_border %>%
   dplyr::mutate(
@@ -279,7 +282,7 @@ queen_weights <- job_counts %>%
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using subway transit time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=5, fig.cap="Global auto-correlation of job count using subway transit time for neighborhood wieghts"}
 
 #### Subway
 
@@ -300,7 +303,7 @@ spdep::moran.plot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=5, fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
 
 #### Driving
 
@@ -321,7 +324,7 @@ spdep::moran.plot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6,fig.cap="Global auto-correlation of job count using walking time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=5,fig.cap="Global auto-correlation of job count using walking time for neighborhood wieghts"}
 
 #### Walking
 
@@ -342,7 +345,7 @@ spdep::moran.plot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using queens contiguity for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=5, fig.cap="Global auto-correlation of job count using queens contiguity for neighborhood wieghts"}
 
 #### Queens
 
@@ -377,18 +380,11 @@ classify_co_types <- function(mode_lisa, l_job_counts, avg_job_count) {
     ) %>%
     dplyr::mutate(
       co_type = dplyr::case_when(
-        `Pr(z > 0)` <= 0.05 &
-          Ii >= 0 &
-          l_job_counts >= avg_job_count ~ "HH",
-        `Pr(z > 0)` <= 0.05 &
-          Ii >= 0 &
-          l_job_counts <  avg_job_count ~ "LL",
-        `Pr(z > 0)` <= 0.05 &
-          Ii < 0 &
-          l_job_counts >= avg_job_count ~ "HL",
-        `Pr(z > 0)` <= 0.05 &
-          Ii < 0 &
-          l_job_counts < avg_job_count ~ "LH"
+        `Pr(z > 0)` > 0.05 ~ "Insignificant",
+        `Pr(z > 0)` <= 0.05 & Ii >= 0 & l_job_counts >= avg_job_count ~ "HH",
+        `Pr(z > 0)` <= 0.05 & Ii >= 0 & l_job_counts <  avg_job_count ~ "LL",
+        `Pr(z > 0)` <= 0.05 & Ii < 0 &  l_job_counts >= avg_job_count ~ "HL",
+        `Pr(z > 0)` <= 0.05 & Ii < 0 &  l_job_counts < avg_job_count ~ "LH"
       )
     )
 }
@@ -778,7 +774,7 @@ walking_pred_low <- walking_predictions - (2*walking_se)
 walking_pred_high <- walking_predictions + (2*walking_se)
 
 predictions <- dplyr::tibble(
-  Minutes = c("Ten", "Twenty Five", "Fifty"),
+  Minutes = c("Twelve", "Twenty Five", "Fifty"),
   subway_predictions,
   subway_pred_low,
   subway_pred_high,
