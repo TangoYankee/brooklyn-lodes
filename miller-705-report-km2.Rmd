@@ -931,3 +931,56 @@ tmap::tm_shape(bk_nta_border) +
     palette = c("red", "goldenrod", "white", "steelblue", "seagreen") 
   )
 ```
+
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "HH")) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("red") 
+  )
+```
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "HL")) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("goldenrod") 
+  )
+```
+
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "Insignificant")) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("black") 
+  )
+```
+
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "LH")) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("steelblue") 
+  )
+```
+```{r, message=FALSE}
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines %>% filter(co_type == "LL")) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("seagreen") 
+  )
+```
