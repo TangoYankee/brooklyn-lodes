@@ -1,7 +1,8 @@
 ---
 output:
+  pdf_document: 
+    fig_caption: true
   html_document: default
-  pdf_document: default
 ---
 # November 28th project update
 
@@ -130,7 +131,7 @@ job_counts <- od %>%
 ```
 
 The original distribution of jobs/km2 is skewed to the right.
-```{r, message=FALSE}
+```{r, message=FALSE, fig.cap="Frequency of job counts for NTAs"}
 ggplot(job_counts) +
   ggtitle("Frequency of job counts for NTAs") +
   xlab("Jobs per square km") +
