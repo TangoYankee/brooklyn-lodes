@@ -15,7 +15,6 @@ library(igraph)
 library(tmap)
 library(sf)
 library(RColorBrewer)
-library(patchwork)
 options(scipen = 999)
 ```
 
@@ -317,6 +316,7 @@ par(mfrow=c(2,2))
 plot(driving_model, which = 1:4)
 ```
 
+
 ```{r, message=FALSE, echo=FALSE}
 
 ### Walking time and commute count
@@ -335,6 +335,7 @@ walking_times_reduced <- walking_times %>%
   )
 ```
 
+
 ```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time spent walking plotted against the number of commutes standardized by area. A smoother line is overlayed in blue."}
 ggplot(data = walking_times_reduced, aes(x = seconds_of_walking, y = S000_km2)) +
   ggtitle("Walking times and commutes") +
@@ -343,6 +344,7 @@ ggplot(data = walking_times_reduced, aes(x = seconds_of_walking, y = S000_km2)) 
   geom_point() +
   stat_smooth()
 ```
+
 
 ```{r, message = FALSE, echo=FALSE, fig.width=10, fig.height=6, fig.cap="Time spent walking is transormed by raising it to the power of one-eighth and taking the inverse. Commute count is transformed with the natural log. The values are plotted against each other. A smoother line is overlayed in blue."}
 
@@ -409,7 +411,7 @@ ggplot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, results='hide'}
 times_of_interest <- c(12, 25, 50)*60
 
 ## subway predictions
@@ -521,7 +523,7 @@ queen_weights <- job_counts %>%
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using subway transit time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using subway transit time for neighborhood wieghts"}
 
 #### Subway
 
@@ -541,7 +543,7 @@ spdep::moran.plot(
 )
 ```
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using driving time for neighborhood wieghts"}
 
 #### Driving
 
@@ -562,7 +564,7 @@ spdep::moran.plot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using walking time for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6,fig.cap="Global auto-correlation of job count using walking time for neighborhood wieghts"}
 
 #### Walking
 
@@ -583,7 +585,7 @@ spdep::moran.plot(
 ```
 
 
-```{r, message=FALSE, echo=FALSE, results='hide', fig.cap="Global auto-correlation of job count using queens contiguity for neighborhood wieghts"}
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=6, fig.cap="Global auto-correlation of job count using queens contiguity for neighborhood wieghts"}
 
 #### Queens
 
@@ -687,13 +689,29 @@ queen_bk_nta_border <- bk_nta_border %>%
   )
 ```
 
+```{r, message=FALSE, echo=FALSE}
+
+### Queen Contiguity
+
+queen_map <- tmap::tm_shape(queen_bk_nta_border) +
+  tmap::tm_polygons(
+    col = "co_type",
+    title = "Clusters &\nOutliers",
+    palette = c("red", "lightgrey", "steelblue", "seagreen"),
+  ) + 
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Queen"
+  )
+```
+
 
 ```{r, message=FALSE, echo=FALSE}
 
 #### Subway
 
-tmap::tm_shape(subway_bk_nta_border) +
-  tm_polygons(
+subway_map <- tmap::tm_shape(subway_bk_nta_border) +
+  tmap::tm_polygons(
     col = "co_type",
     palette = c("red", "goldenrod", "lightgrey", "steelblue"),
     title = "Clusters &\nOutliers"
@@ -704,14 +722,17 @@ tmap::tm_shape(subway_bk_nta_border) +
     title.col = "Subway Routes"
   ) +
   tmap::tm_layout(
-    legend.outside = TRUE
+    legend.outside = TRUE,
+    title = "Subway"
   )
 ```
+
+
 ```{r, message=FALSE, echo=FALSE}
 
 #### Driving
 
-tmap::tm_shape(driving_bk_nta_border) +
+driving_map <- tmap::tm_shape(driving_bk_nta_border) +
   tm_polygons(
     col = "co_type",
     palette = c("red", "goldenrod", "lightgrey", "steelblue", "seagreen"),
@@ -725,42 +746,35 @@ tmap::tm_shape(driving_bk_nta_border) +
     title.col = "Major strees &\narterials"
   ) +
   tmap::tm_layout(
-    legend.outside = TRUE
+    legend.outside = TRUE,
+    title = "Driving"
   )
 ```
+
 
 ```{r, message=FALSE, echo=FALSE}
 
 ### Walking 
 
-ggplot(walking_bk_nta_border) +
-  geom_sf(aes(fill = co_type), col = 'lightgrey') +
-  scale_fill_manual(
-    values = c("red", "goldenrod", "NA", "steelblue", "seagreen"),
-    name = "Clusters & \nOutliers"
+walking_map <- tmap::tm_shape(walking_bk_nta_border) +
+  tm_polygons(
+    col = "co_type",
+    palette = c("red", "goldenrod", "lightgrey", "steelblue", "seagreen"),
+    title = "Clusters &\nOutliers"
   ) +
-  labs(
-    title = "Walking connections",
-    subtitle = "Natural log of job counts per square km"
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Walking"
   )
 ```
 
 
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning = FALSE, fig.width=10, fig.height=13, fig.cap="Local auto-correlation for job count of NTAs. Each map utilizes a unique neighborhood weighting. Top left uses queen contiguity. Top right uses driving time in traffic and is overlayed with major roads. Bottom left uses walking time. Bottom right uses transit time on the subway and is overlayed with the subway network."}
 
-### Queen Contiguity
+tmap::tmap_arrange(queen_map, driving_map, walking_map, subway_map, nrow = 2, ncol = 2)
 
-ggplot(queen_bk_nta_border) +
-  geom_sf(aes(fill = co_type), col = 'lightgrey') +
-  scale_fill_manual(
-    values = c("red", "NA", "steelblue", "seagreen"),
-    name = "Clusters & \nOutliers"
-  ) +
-  labs(
-    title = "Queen contiguity",
-    subtitle = "Natural log of job counts per square km"
-  )
 ```
+
 
 
 ```{r, message=FALSE, echo=FALSE}
