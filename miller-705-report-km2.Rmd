@@ -26,6 +26,7 @@ library(ggraph)
 library(igraph)
 library(tmap)
 library(sf)
+library(RColorBrewer)
 ```
 
 ### Files
@@ -1014,7 +1015,7 @@ commute_count_lines_top <- commute_count_lines %>%
   dplyr::slice_max(
     order_by = log_S000_km2,
     n = 62
-  )
+  ) 
 
  tmap::tm_shape(bk_nta_border) +
   tmap::tm_polygons(
@@ -1025,6 +1026,24 @@ commute_count_lines_top <- commute_count_lines %>%
     palette = c("red", "goldenrod", "black") 
   ) 
 ```
+```{r, message=FALSE}
+commute_network_top_clusters <- igraph::cluster_fast_greedy(commute_network_top)
+
+commute_count_lines_top_clusters <- commute_count_lines_top %>%
+  dplyr::mutate(
+    membership = as.character(commute_network_top_clusters$membership)
+  )
+
+tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#f9f9f9"
+  ) + tmap::tm_shape(commute_count_lines_top_clusters) +
+  tmap::tm_lines(
+    col = "membership",
+    palette = brewer.pal(3, "Dark2") 
+  ) 
+```
+
 ```{r, message=FALSE}
 commute_count_lines_bottom <- commute_count_lines %>%
   dplyr::slice_min(
