@@ -825,7 +825,7 @@ commute_network <- tidygraph::tbl_graph(
 commute_nodes_top <- commute_nodes %>%
   dplyr::slice_max(
     order_by = log_S000_km2,
-    n = 50
+    n = 62
   )
 
 commute_edges_top <- build_edges(commute_nodes_top$name)
@@ -842,6 +842,30 @@ ggraph::ggraph(
 ) +
   geom_edge_link() +
   geom_node_circle(aes(r = commute_nodes_top$log_S000_km2 / 100), fill = "blue") +
+  geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
+```
+
+```{r, message=FALSE}
+commute_nodes_bottom <- commute_nodes %>%
+  dplyr::slice_min(
+    order_by = log_S000_km2,
+    n = 62
+  )
+
+commute_edges_bottom <- build_edges(commute_nodes_bottom$name)
+commute_network_bottom <- tidygraph::tbl_graph(
+  nodes = commute_nodes_bottom,
+  edges = commute_edges_bottom,
+  directed = FALSE
+)
+
+total_trips_bottom = sum(commute_nodes_bottom$log_S000_km2)
+ggraph::ggraph(
+  commute_network_bottom,
+  layout = "stress"
+) +
+  geom_edge_link() +
+  geom_node_circle(aes(r = commute_nodes_bottom$log_S000_km2 / 100), fill = "blue") +
   geom_node_text(aes(label = stringr::str_c(stringr::str_sub(name, 3,4), '&', stringr::str_sub(name, 7,8))), repel = TRUE)
 ```
 
@@ -983,4 +1007,37 @@ tmap::tm_shape(bk_nta_border) +
     col = "co_type",
     palette = c("seagreen") 
   )
+```
+
+```{r, message=FALSE}
+commute_count_lines_top <- commute_count_lines %>%
+  dplyr::slice_max(
+    order_by = log_S000_km2,
+    n = 62
+  )
+
+ tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines_top) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("red", "goldenrod", "black") 
+  ) 
+```
+```{r, message=FALSE}
+commute_count_lines_bottom <- commute_count_lines %>%
+  dplyr::slice_min(
+    order_by = log_S000_km2,
+    n = 62
+  )
+
+ tmap::tm_shape(bk_nta_border) +
+  tmap::tm_polygons(
+    col = "#eeeeee"
+  ) + tmap::tm_shape(commute_count_lines_bottom) +
+  tmap::tm_lines(
+    col = "co_type",
+    palette = c("black", "seagreen") 
+  ) 
 ```
