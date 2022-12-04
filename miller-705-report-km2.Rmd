@@ -28,6 +28,7 @@ library(igraph)
 library(tmap)
 library(sf)
 library(RColorBrewer)
+options(scipen = 999)
 ```
 
 ### Files
@@ -131,7 +132,7 @@ job_counts <- od %>%
 ```
 
 The original distribution of jobs/km2 is skewed to the right.
-```{r, message=FALSE, fig.cap="Frequency of job counts for NTAs"}
+```{r, message=FALSE, fig.cap="Frequency of job counts in each NTAs"}
 ggplot(job_counts) +
   ggtitle("Frequency of job counts for NTAs") +
   xlab("Jobs per square km") +
@@ -140,38 +141,44 @@ ggplot(job_counts) +
 ```
 
 Applying a log transformation to the job count makes it more normal
-```{r, message=FALSE}
+```{r, message=FALSE, fig.cap="Frequency of natural log for job counts in each NTA"}
 ggplot(job_counts) +
   ggtitle("Frequency of the natural log for job counts for NTAs") +
   xlab("Natural log of jobs per square km") +
   ylab("Number of NTAs with value") +
   geom_histogram(aes(x = log_S000_km2), fill = "steelblue", color = "grey", bins = "30")
 ```
-
-Maps of job count 
 ```{r, message=FALSE}
+S000_count_colors = "BuGn"
+```
+Maps of job count 
+```{r, message=FALSE, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. Job count is standardized by the total area of the NTA. The top figure shows the original count. The bottom figure shows the log tranformation of the count."}
+
 map_original_jobs <- tmap::tm_shape(job_counts) + 
   tmap::tm_polygons(
     col = "S000_km2",
     style = "jenks",
-    title = "Jobs/km2"
+    title = "Jobs/km2",
+    palette = brewer.pal(5, S000_count_colors) 
   ) + 
   tmap::tm_layout(
-    legend.outside = TRUE
+    legend.outside = TRUE,
   )
 
 map_log_jobs <- tmap::tm_shape(job_counts) + 
   tmap::tm_polygons(
     col = "log_S000_km2",
     style = "jenks",
-    title = "Jobs/km2\n(Natural log)"
+    title = "Jobs/km2\n(Nat. log)",
+    palette = brewer.pal(5, S000_count_colors) 
   ) + 
   tmap::tm_layout(
-    legend.outside = TRUE
+    legend.outside = TRUE,
   )
 
-tmap::tmap_arrange(map_original_jobs, map_log_jobs)
+tmap::tmap_arrange(map_original_jobs, map_log_jobs, ncol = 1, nrow = 2)
 ```
+
 ### Distribution of commute counts
 
 Commutes are the number of trips between two distinct NTAs.
