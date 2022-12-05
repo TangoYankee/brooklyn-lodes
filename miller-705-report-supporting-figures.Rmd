@@ -53,9 +53,15 @@ subways <- sf::st_read("./data/subway_lines.geojson")
 
 ### Processing of data used throughout project
 
+bois_names <- c("Manhattan", "Bronx", "Brooklyn", "Queens")
 bk_name <- "Brooklyn"
 bk_county_code <- "047"
 bk_parks <- "BK99"
+
+bois_nta_borders <- nyc_nta_borders %>%
+  dplyr::filter(
+    BoroName %in% bois_names
+  )
 
 bk_nta_border <- nyc_nta_borders %>%
   dplyr::filter(BoroName == bk_name)  %>%
@@ -105,6 +111,266 @@ bk_subways <- subways %>%
 bk_major_roads <- major_roads %>%
   sf::st_intersection(bk_nta_border)
 ```
+
+```{r, echo=FALSE, message=FALSE, fig.width=10, fig.height=12, fig.cap="NYC Boroughs served by the MTA subway system"}
+
+tmap::tm_shape(bois_nta_borders) + 
+  tmap::tm_polygons(
+    col = "BoroName",
+    title = "Borough"
+  )
+```
+```{r, message = FALSE, echo=FALSE, results='hide'}
+avg_nta_area <- sum(bois_nta_borders$Shape__Area) / length(bois_nta_borders$Shape__Area)
+avg_nta_radius <- sqrt(avg_nta_area/pi)
+sprintf('Estimate of average distance from center to edge of nta: % s m', avg_nta_radius)
+```
+
+
+```{r, message = FALSE, echo=FALSE, results='hide'}
+# Create table to relate NTAs to their component census tracts
+bois_county_tract_nta_equiv <- nyc_nta_tract_equiv %>%
+  filter(borough_name %in% bois_names) %>%
+  mutate(county_tract = str_c(`county_code`, `census_tract`)) %>%
+  select("county_tract", "nta_code")
+
+# Reduce NYS origin destination data to only ntas of interest
+bois_county_codes = c("061", "005", "047", "081") # Manhattan, Bronx, Brooklyn, Queens
+bois_park_ntas <- c("BX10", "BX99", "BK99", "MN99", "QN99")
+bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
+  # Select only tracts within the boroughs of interest
+  dplyr::filter(
+    stringr::str_sub(as.character(w_geocode), 3, 5) %in% bois_county_codes &
+      stringr::str_sub(as.character(h_geocode), 3, 5) %in% bois_county_codes
+    ) %>%
+  # Create fields specifically for home counties and tracts
+  dplyr::mutate(w_county_tract = stringr::str_sub(as.character(w_geocode), 3, 11)) %>%
+  dplyr::mutate(h_county_tract = stringr::str_sub(as.character(h_geocode), 3, 11)) %>%
+  # Narrow table down to tracts and all jobs
+  dplyr::select(h_county_tract, w_county_tract, S000) %>%
+  # Relate tracts with ntas
+  dplyr::left_join(bois_county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  dplyr::rename(h_nta_code = nta_code) %>%
+  dplyr::left_join(bois_county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  dplyr::rename(w_nta_code = nta_code) %>%
+  # Remove trips within the same nta, only inter-nta trips are of interest
+  dplyr::filter(w_nta_code != h_nta_code) %>%
+  # Remove trips involving park NTAs, they are not true neighborhoods 
+  dplyr::filter(!(w_nta_code %in% bois_park_ntas) & !(h_nta_code %in% bois_park_ntas)) %>%
+  # Label trips based on home and work ntas
+  dplyr::mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  # Count the number of trips made between these ntas and in this direction 
+  dplyr::group_by(od) %>%
+  dplyr::summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  # Remove duplicate entries
+  unique()
+```
+
+```{r, message = FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=12, fig.cap="Number of jobs in each NTA across the Boroughs of Interest"}
+
+## utility function
+get_nta_dest <- function(ods_of_interest) {
+  ods_of_interest %>%
+    dplyr::group_by(w_nta_code) %>%
+    dplyr::summarise(
+      w_nta_code,
+      S000 = sum(S000)
+    ) %>%
+    unique() %>%
+    left_join(bois_nta_borders, c("w_nta_code" = "NTACode")) %>%
+    st_as_sf() 
+}
+
+# reduce origin destination data to counts of trips ending in an nta
+  # associated these trips with the work nta geography
+bois_nta_dest <- bois_nta_ods %>%
+  dplyr::group_by(w_nta_code) %>%
+  dplyr::summarise(
+    w_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(bois_nta_borders, c("w_nta_code" = "NTACode")) %>%
+  st_as_sf()
+
+tmap::tm_shape(bois_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Trips to work in NTA",
+    legend.outside.width = 0.6
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE,
+  )
+```
+
+```{r, message=TRUE, echo=FALSE, results='hide', warning=FALSE, fig.width=10, fig.height=12, fig.cap="Desire lines for trips across the Boroughs of interest with at least 5000 trips are made"}
+# Points on surface
+bois_nta_pos <- bois_nta_borders %>%
+  dplyr::mutate(geometry = sf::st_point_on_surface(geometry))
+
+## utility function
+get_nta_od_lines <- function(nta_ods_of_interest) {
+ nta_ods_of_interest %>%
+    dplyr::left_join(bois_nta_pos, c("h_nta_code" = "NTACode")) %>%
+    dplyr::rename(h_geometry = geometry) %>%
+    dplyr::left_join(bois_nta_pos, c("w_nta_code" = "NTACode")) %>%
+    dplyr::rename(w_geometry = geometry) %>%
+    dplyr::mutate(geometry = sf::st_union(h_geometry, w_geometry))%>%
+    dplyr::mutate(geometry = sf::st_cast(geometry, "LINESTRING")) %>%
+    dplyr::select("od", "S000", "geometry") %>%
+    sf::st_as_sf() 
+}
+
+bois_nta_od_lines <- get_nta_od_lines(bois_nta_ods)
+
+tmap::tm_shape(bois_nta_borders) +
+  tmap::tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  # Filter the desire lines to reduce their number and help pdf rendering
+  ) + tmap::tm_shape(dplyr::filter(bois_nta_od_lines, S000 > 5000)) +
+  tmap::tm_lines(
+    col = "#212121",
+    lwd = "S000",
+    title.lwd = "Trips",
+  ) + tmap::tm_layout(
+    legend.outside = TRUE
+  )
+```
+
+
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=12, fig.cap="Number of jobs where the trip origin is within the same borough."}
+## NTA borders for each borough
+mn_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Manhattan")
+bx_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Bronx")
+bk_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Brooklyn")
+qn_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Queens")
+
+## Intra Borough trips 
+intra_bois_nta_ods <- function(boro_abrv) {
+  bois_nta_ods %>%
+    dplyr::filter(
+      stringr::str_sub(h_nta_code, 1,2) == boro_abrv &
+      stringr::str_sub(w_nta_code, 1, 2) == boro_abrv
+    )
+}
+mn_nta_ods <- intra_bois_nta_ods("MN")
+bx_nta_ods <- intra_bois_nta_ods("BX")
+bk_nta_ods <- intra_bois_nta_ods("BK")
+qn_nta_ods <- intra_bois_nta_ods("QN")
+
+
+## Most popular destinations for trips within a Borough
+mn_nta_dest <- get_nta_dest(mn_nta_ods)
+bx_nta_dest <- get_nta_dest(bx_nta_ods)
+bk_nta_dest <- get_nta_dest(bk_nta_ods)
+qn_nta_dest <- get_nta_dest(qn_nta_ods)
+  
+mn_dest_map <- tmap::tm_shape(mn_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Manhattan"
+  )
+bx_dest_map <- tmap::tm_shape(bx_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Bronx"
+  )
+bk_dest_map <- tmap::tm_shape(bk_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Brooklyn"
+  )
+qn_dest_map <- tmap::tm_shape(qn_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Queens"
+  )
+tmap::tmap_arrange(mn_dest_map, bx_dest_map, bk_dest_map, qn_dest_map, nrow = 2, ncol = 2)
+```
+
+    
+```{r, message=FALSE, echo=FALSE, results='hide', fig.width=10, fig.height=12, fig.cap="Desire lines for the most popular trips that start and end within the borough"}
+mn_nta_od_lines <- get_nta_od_lines(mn_nta_ods)
+bx_nta_od_lines <- get_nta_od_lines(bx_nta_ods)
+bk_nta_od_lines <- get_nta_od_lines(bk_nta_ods)
+qn_nta_od_lines <- get_nta_od_lines(qn_nta_ods)
+
+create_od_lines_map <- function(borders, lines, borough) {
+  return(
+    tmap::tm_shape(borders) +
+ tmap::tm_polygons(
+    col = "#ebebeb",
+    title = borough
+  ) + tmap::tm_shape(lines) +
+  tmap::tm_lines(
+    col = "#212121",
+    lwd = "S000",
+    title.lwd = "Trips"
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE,
+    title = borough
+  )
+  )
+}
+
+# Filter the desire lines to reduce their number and help pdf rendering
+mn_nta_od_lines_map <- create_od_lines_map(mn_nta_borders,
+                                           dplyr::filter(mn_nta_od_lines, S000 > 6000),
+                                           "Manhattan"
+                                           )
+bx_nta_od_lines_map <- create_od_lines_map(bx_nta_borders,
+                                           dplyr::filter(bx_nta_od_lines, S000 > 300),
+                                           "Bronx"
+                                           )
+bk_nta_od_lines_map <- create_od_lines_map(bk_nta_borders,
+                                           dplyr::filter(bk_nta_od_lines, S000 > 500),
+                                           "Brooklyn"
+                                           )
+qn_nta_od_lines_map <- create_od_lines_map(qn_nta_borders,
+                                           dplyr::filter(qn_nta_od_lines, S000 > 500),
+                                           "Queens"
+                                           )
+tmap::tmap_arrange(
+  mn_nta_od_lines_map,
+  bx_nta_od_lines_map,
+  bk_nta_od_lines_map,
+  qn_nta_od_lines_map,
+  nrow = 2,
+  ncol = 2)
+``` 
+
+    
+```{r, message = FALSE, echo=FALSE, results='hide'}
+print("Intra borough trips")
+sprintf("Manhattan: % s", sum(mn_nta_ods$S000))
+sprintf("Bronx: % s", sum(bx_nta_ods$S000))
+sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
+sprintf("Queens: % s", sum(qn_nta_ods$S000))
+``` 
 
     
 ```{r, message = FALSE, echo=FALSE, results='hide', warning=FALSE}
