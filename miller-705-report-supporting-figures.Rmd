@@ -7,7 +7,7 @@ output:
 
 ```{r, message=FALSE, echo=FALSE, results='hide'}
 ## Import libraries
-
+library(knitr)
 library(tidyverse)
 library(tidygraph)
 library(ggraph)
@@ -17,6 +17,11 @@ library(sf)
 library(RColorBrewer)
 options(scipen = 999)
 ```
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Conceptual model of transportation dynamics"}
+knitr::include_graphics("./images/triboro-conceptual-model-original.png")
+```
+
 
 
 ```{r, message=FALSE, echo=FALSE, results='hide'}
@@ -819,6 +824,27 @@ build_edges <- function(nodes) {
   return (tibble::tibble(from = edges_from, to = edges_to)) 
 }
 ```
+
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Hypothetical NTA layout"}
+knitr::include_graphics("images/example-ntas.png")
+```
+
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Hypothetical NTA network"}
+knitr::include_graphics("images/od-undirected-network.png")
+```
+
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Matrix for hypothetical NTA network"}
+knitr::include_graphics("images/od-undirected-matrix.png")
+```
+
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Complement for hypothetical NTA network"}
+knitr::include_graphics("images/od-undirected-matrix-complement.png")
+```
+
 
 
 ```{r, message=FALSE, echo=FALSE}
