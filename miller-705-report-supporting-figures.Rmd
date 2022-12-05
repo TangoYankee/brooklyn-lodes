@@ -18,6 +18,12 @@ library(RColorBrewer)
 options(scipen = 999)
 ```
 
+
+```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=12, fig.cap="Outline of Triboro Line proposed by the Regional Plan Association"}
+knitr::include_graphics("./images/triboro-line-rpa-map.png")
+```
+
+
 ```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=6, fig.cap="Conceptual model of transportation dynamics"}
 knitr::include_graphics("./images/triboro-conceptual-model-original.png")
 ```
@@ -402,6 +408,8 @@ ggplot(job_counts) +
   geom_histogram(aes(x = S000_km2), fill = "steelblue", color = "grey", bins = "30")
 
 ```
+
+
 ```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 6, fig.cap="Frequency of job counts in each NTAs, standardized by the area of the NTA and tranformed with a natural log."}
 ggplot(job_counts) +
   ggtitle("Frequency of the natural log for job counts for NTAs") +

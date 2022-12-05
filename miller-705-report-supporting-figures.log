@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.10.28)  4 DEC 2022 20:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.10.28)  4 DEC 2022 20:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -433,380 +433,385 @@ LaTeX Info: Redefining \nameref on input line 67.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-<./images/triboro-conceptual-model-original.png, id=4, 244.915pt x 423.5825pt>
+<./images/triboro-line-rpa-map.png, id=4, 887.315pt x 1196.47pt>
+File: ./images/triboro-line-rpa-map.png Graphic file (type png)
+<use ./images/triboro-line-rpa-map.png>
+Package pdftex.def Info: ./images/triboro-line-rpa-map.png  used on input line 
+71.
+(pdftex.def)             Requested size: 482.36533pt x 650.42926pt.
+
+Overfull \hbox (12.6103pt too wide) in paragraph at lines 71--72
+ [][] 
+ []
+
+
+LaTeX Warning: Float too large for page by 23.94368pt on input line 76.
+
+<./images/triboro-conceptual-model-original.png, id=6, 244.915pt x 423.5825pt>
 File: ./images/triboro-conceptual-model-original.png Graphic file (type png)
 <use ./images/triboro-conceptual-model-original.png>
 Package pdftex.def Info: ./images/triboro-conceptual-model-original.png  used o
-n input line 71.
+n input line 80.
 (pdftex.def)             Requested size: 244.92184pt x 423.59439pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-5-1.pdf,
- id=6, 600.2425pt x 833.1125pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-5-1
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-6-1.pdf,
+ id=7, 600.2425pt x 833.1125pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-6-1
 .pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-5-1.
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-6-1.
 pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-5-1.pdf  used on input line 80.
+x/unnamed-chunk-6-1.pdf  used on input line 89.
 (pdftex.def)             Requested size: 468.6452pt x 650.46075pt.
 
-LaTeX Warning: Float too large for page by 23.97517pt on input line 82.
+LaTeX Warning: Float too large for page by 23.97517pt on input line 91.
 
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-8-1.pdf,
- id=7, 584.1825pt x 688.5725pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-8-1
-.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-8-1.
-pdf>
-Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-8-1.pdf  used on input line 86.
-(pdftex.def)             Requested size: 469.77121pt x 553.71657pt.
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 9
-0.
-(/usr/share/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-9-1.pdf,
- id=8, 620.3175pt x 664.4825pt>
+ id=8, 584.1825pt x 688.5725pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-9-1
 .pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-9-1.
 pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-9-1.pdf  used on input line 97.
-(pdftex.def)             Requested size: 469.75192pt x 503.19702pt.
+x/unnamed-chunk-9-1.pdf  used on input line 95.
+(pdftex.def)             Requested size: 469.77121pt x 553.71657pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-10-1.pdf
-, id=9, 683.55376pt x 851.18pt>
+, id=9, 620.3175pt x 664.4825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-10-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-10-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-10-1.pdf  used on input line 104.
-(pdftex.def)             Requested size: 469.76474pt x 584.964pt.
+x/unnamed-chunk-10-1.pdf  used on input line 101.
+(pdftex.def)             Requested size: 469.75192pt x 503.19702pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-11-1.pdf
-, id=10, 702.625pt x 851.18pt>
+, id=10, 683.55376pt x 851.18pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-11-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-11-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-11-1.pdf  used on input line 111.
-(pdftex.def)             Requested size: 469.76996pt x 569.09274pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-14-1.pdf
-, id=11, 716.6775pt x 423.5825pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-14-
+x/unnamed-chunk-11-1.pdf  used on input line 108.
+(pdftex.def)             Requested size: 469.76474pt x 584.964pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-12-1.pdf
+, id=11, 702.625pt x 851.18pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-12-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-14-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-12-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-14-1.pdf  used on input line 116.
-(pdftex.def)             Requested size: 469.76074pt x 277.6457pt.
+x/unnamed-chunk-12-1.pdf  used on input line 115.
+(pdftex.def)             Requested size: 469.76996pt x 569.09274pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-15-1.pdf
-, id=12, 712.6625pt x 423.5825pt>
+, id=12, 716.6775pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-15-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-15-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-15-1.pdf  used on input line 117.
+x/unnamed-chunk-15-1.pdf  used on input line 122.
+(pdftex.def)             Requested size: 469.76074pt x 277.6457pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-16-1.pdf
+, id=13, 712.6625pt x 423.5825pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-16-
+1.pdf Graphic file (type pdf)
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-16-1
+.pdf>
+Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
+x/unnamed-chunk-16-1.pdf  used on input line 129.
 (pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
-[1
-
-{/usr/share/texlive/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./images/tri
-boro-conceptual-model-original.png>] [2 <./miller-705-report-supporting-figures
-_files/figure-latex/unnamed-chunk-5-1.pdf>] [3 <./miller-705-report-supporting-
-figures_files/figure-latex/unnamed-chunk-8-1.pdf>] [4 <./miller-705-report-supp
-orting-figures_files/figure-latex/unnamed-chunk-9-1.pdf>] [5 <./miller-705-repo
-rt-supporting-figures_files/figure-latex/unnamed-chunk-10-1.pdf>] [6 <./miller-
-705-report-supporting-figures_files/figure-latex/unnamed-chunk-11-1.pdf>]
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-17-1.pdf
-, id=82, 552.0625pt x 574.145pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-17-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-18-1.pdf
+, id=14, 552.0625pt x 574.145pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-18-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-17-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-18-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-17-1.pdf  used on input line 121.
+x/unnamed-chunk-18-1.pdf  used on input line 136.
 (pdftex.def)             Requested size: 469.7776pt x 488.56873pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-20-1.pdf
-, id=83, 689.57625pt x 287.0725pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-20-
-1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-20-1
-.pdf>
-Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-20-1.pdf  used on input line 129.
-(pdftex.def)             Requested size: 469.75792pt x 195.56152pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-21-1.pdf
-, id=84, 689.57625pt x 287.0725pt>
+, id=15, 689.57625pt x 287.0725pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-21-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-21-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-21-1.pdf  used on input line 136.
+x/unnamed-chunk-21-1.pdf  used on input line 144.
 (pdftex.def)             Requested size: 469.75792pt x 195.56152pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-22-1.pdf
-, id=85, 689.57625pt x 287.0725pt>
+, id=16, 689.57625pt x 287.0725pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-22-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-22-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-22-1.pdf  used on input line 143.
+x/unnamed-chunk-22-1.pdf  used on input line 151.
 (pdftex.def)             Requested size: 469.75792pt x 195.56152pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-23-1.pdf
-, id=86, 689.57625pt x 291.0875pt>
+, id=17, 689.57625pt x 287.0725pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-23-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-23-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-23-1.pdf  used on input line 150.
-(pdftex.def)             Requested size: 469.75792pt x 198.29665pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-29-1.pdf
-, id=87, 686.565pt x 851.18pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-29-
+x/unnamed-chunk-23-1.pdf  used on input line 158.
+(pdftex.def)             Requested size: 469.75792pt x 195.56152pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-24-1.pdf
+, id=18, 689.57625pt x 291.0875pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-24-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-29-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-24-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-29-1.pdf  used on input line 157.
-(pdftex.def)             Requested size: 469.74944pt x 582.37941pt.
+x/unnamed-chunk-24-1.pdf  used on input line 165.
+(pdftex.def)             Requested size: 469.75792pt x 198.29665pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-30-1.pdf
-, id=88, 712.6625pt x 423.5825pt>
+, id=19, 686.565pt x 851.18pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-30-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-30-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-30-1.pdf  used on input line 167.
-(pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
+x/unnamed-chunk-30-1.pdf  used on input line 172.
+(pdftex.def)             Requested size: 469.74944pt x 582.37941pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-31-1.pdf
-, id=89, 712.6625pt x 423.5825pt>
+, id=20, 712.6625pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-31-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-31-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-31-1.pdf  used on input line 174.
+x/unnamed-chunk-31-1.pdf  used on input line 182.
 (pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-33-1.pdf
-, id=90, 712.6625pt x 857.2025pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-33-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-32-1.pdf
+, id=21, 712.6625pt x 423.5825pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-32-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-33-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-32-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-33-1.pdf  used on input line 181.
+x/unnamed-chunk-32-1.pdf  used on input line 189.
+(pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-34-1.pdf
+, id=22, 712.6625pt x 857.2025pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-34-
+1.pdf Graphic file (type pdf)
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-34-1
+.pdf>
+Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
+x/unnamed-chunk-34-1.pdf  used on input line 196.
 (pdftex.def)             Requested size: 469.74974pt x 565.02293pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-35-1.pdf
-, id=91, 712.6625pt x 421.575pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-35-
-1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-35-1
-.pdf>
-Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-35-1.pdf  used on input line 189.
-(pdftex.def)             Requested size: 469.74974pt x 277.88011pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-36-1.pdf
-, id=92, 716.6775pt x 423.5825pt>
+, id=23, 712.6625pt x 421.575pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-36-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-36-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-36-1.pdf  used on input line 196.
-(pdftex.def)             Requested size: 469.76074pt x 277.6457pt.
+x/unnamed-chunk-36-1.pdf  used on input line 204.
+(pdftex.def)             Requested size: 469.74974pt x 277.88011pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-37-1.pdf
-, id=93, 698.61pt x 818.05624pt>
+, id=24, 716.6775pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-37-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-37-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-37-1.pdf  used on input line 205.
-(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-39-1.pdf
-, id=94, 712.6625pt x 421.575pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-39-
+x/unnamed-chunk-37-1.pdf  used on input line 211.
+(pdftex.def)             Requested size: 469.76074pt x 277.6457pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-38-1.pdf
+, id=25, 698.61pt x 818.05624pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-38-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-39-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-38-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-39-1.pdf  used on input line 212.
-(pdftex.def)             Requested size: 469.74974pt x 277.88011pt.
+x/unnamed-chunk-38-1.pdf  used on input line 220.
+(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-40-1.pdf
-, id=95, 717.68124pt x 423.5825pt>
+, id=26, 712.6625pt x 421.575pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-40-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-40-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-40-1.pdf  used on input line 219.
-(pdftex.def)             Requested size: 469.76161pt x 277.2579pt.
+x/unnamed-chunk-40-1.pdf  used on input line 227.
+(pdftex.def)             Requested size: 469.74974pt x 277.88011pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-41-1.pdf
-, id=96, 698.61pt x 818.05624pt>
+, id=27, 717.68124pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-41-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-41-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-41-1.pdf  used on input line 228.
-(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-43-1.pdf
-, id=97, 712.6625pt x 423.5825pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-43-
+x/unnamed-chunk-41-1.pdf  used on input line 234.
+(pdftex.def)             Requested size: 469.76161pt x 277.2579pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-42-1.pdf
+, id=28, 698.61pt x 818.05624pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-42-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-43-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-42-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-43-1.pdf  used on input line 234.
-(pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
+x/unnamed-chunk-42-1.pdf  used on input line 243.
+(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-44-1.pdf
-, id=98, 712.6625pt x 423.5825pt>
+, id=29, 712.6625pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-44-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-44-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-44-1.pdf  used on input line 241.
+x/unnamed-chunk-44-1.pdf  used on input line 249.
 (pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-45-1.pdf
-, id=99, 698.61pt x 818.05624pt>
+, id=30, 712.6625pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-45-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-45-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-45-1.pdf  used on input line 250.
-(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-47-1.pdf
-, id=100, 706.64pt x 423.5825pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-47-
+x/unnamed-chunk-45-1.pdf  used on input line 256.
+(pdftex.def)             Requested size: 469.74974pt x 279.20337pt.
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-46-1.pdf
+, id=31, 698.61pt x 818.05624pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-46-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-47-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-46-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-47-1.pdf  used on input line 256.
-(pdftex.def)             Requested size: 469.75874pt x 281.58833pt.
+x/unnamed-chunk-46-1.pdf  used on input line 265.
+(pdftex.def)             Requested size: 469.7612pt x 550.07956pt.
 <miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-48-1.pdf
-, id=101, 706.64pt x 423.5825pt>
+, id=32, 706.64pt x 423.5825pt>
 File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-48-
 1.pdf Graphic file (type pdf)
 <use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-48-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-48-1.pdf  used on input line 263.
+x/unnamed-chunk-48-1.pdf  used on input line 271.
 (pdftex.def)             Requested size: 469.75874pt x 281.58833pt.
-<images/example-ntas.png, id=102, 186.6975pt x 210.7875pt>
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-49-1.pdf
+, id=33, 706.64pt x 423.5825pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-49-
+1.pdf Graphic file (type pdf)
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-49-1
+.pdf>
+Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
+x/unnamed-chunk-49-1.pdf  used on input line 278.
+(pdftex.def)             Requested size: 469.75874pt x 281.58833pt.
+<images/example-ntas.png, id=34, 186.6975pt x 210.7875pt>
 File: images/example-ntas.png Graphic file (type png)
 <use images/example-ntas.png>
-Package pdftex.def Info: images/example-ntas.png  used on input line 271.
+Package pdftex.def Info: images/example-ntas.png  used on input line 286.
 (pdftex.def)             Requested size: 186.46342pt x 210.52324pt.
-<images/od-undirected-network.png, id=103, 246.9225pt x 196.735pt>
+<images/od-undirected-network.png, id=35, 246.9225pt x 196.735pt>
 File: images/od-undirected-network.png Graphic file (type png)
 <use images/od-undirected-network.png>
 Package pdftex.def Info: images/od-undirected-network.png  used on input line 2
-80.
+95.
 (pdftex.def)             Requested size: 246.92188pt x 196.7345pt.
-<images/od-undirected-matrix.png, id=104, 154.5775pt x 160.6pt>
+<images/od-undirected-matrix.png, id=36, 154.5775pt x 160.6pt>
 File: images/od-undirected-matrix.png Graphic file (type png)
 <use images/od-undirected-matrix.png>
-Package pdftex.def Info: images/od-undirected-matrix.png  used on input line 28
-9.
+Package pdftex.def Info: images/od-undirected-matrix.png  used on input line 30
+4.
 (pdftex.def)             Requested size: 154.58182pt x 160.60449pt.
-<images/od-undirected-matrix-complement.png, id=105, 219.82124pt x 137.51375pt>
-
+<images/od-undirected-matrix-complement.png, id=37, 219.82124pt x 137.51375pt>
 File: images/od-undirected-matrix-complement.png Graphic file (type png)
 <use images/od-undirected-matrix-complement.png>
 Package pdftex.def Info: images/od-undirected-matrix-complement.png  used on in
-put line 298.
+put line 313.
 (pdftex.def)             Requested size: 219.70665pt x 137.44206pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-56-1.pdf
-, id=106, 689.57625pt x 792.9625pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-56-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-57-1.pdf
+, id=38, 689.57625pt x 792.9625pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-57-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-56-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-57-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-56-1.pdf  used on input line 307.
+x/unnamed-chunk-57-1.pdf  used on input line 322.
 (pdftex.def)             Requested size: 469.75792pt x 540.18744pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-65-1.pdf
-, id=107, 693.59125pt x 857.2025pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-65-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-66-1.pdf
+, id=39, 693.59125pt x 857.2025pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-66-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-65-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-66-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-65-1.pdf  used on input line 313.
+x/unnamed-chunk-66-1.pdf  used on input line 328.
 (pdftex.def)             Requested size: 469.77315pt x 580.58794pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-67-1.pdf
-, id=108, 700.6175pt x 420.57124pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-67-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-68-1.pdf
+, id=40, 700.6175pt x 420.57124pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-68-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-67-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-68-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-67-1.pdf  used on input line 323.
+x/unnamed-chunk-68-1.pdf  used on input line 338.
 (pdftex.def)             Requested size: 469.76407pt x 281.99304pt.
-<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-69-1.pdf
-, id=109, 708.6475pt x 417.56pt>
-File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-69-
+<miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-70-1.pdf
+, id=41, 708.6475pt x 417.56pt>
+File: miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-70-
 1.pdf Graphic file (type pdf)
-<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-69-1
+<use miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-70-1
 .pdf>
 Package pdftex.def Info: miller-705-report-supporting-figures_files/figure-late
-x/unnamed-chunk-69-1.pdf  used on input line 331.
+x/unnamed-chunk-70-1.pdf  used on input line 346.
 (pdftex.def)             Requested size: 469.76329pt x 276.80101pt.
-[7 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-14-
-1.pdf> <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk
--15-1.pdf>] [8 <./miller-705-report-supporting-figures_files/figure-latex/unnam
-ed-chunk-17-1.pdf>] [9 <./miller-705-report-supporting-figures_files/figure-lat
-ex/unnamed-chunk-20-1.pdf> <./miller-705-report-supporting-figures_files/figure
--latex/unnamed-chunk-21-1.pdf>] [10 <./miller-705-report-supporting-figures_fil
-es/figure-latex/unnamed-chunk-22-1.pdf> <./miller-705-report-supporting-figures
-_files/figure-latex/unnamed-chunk-23-1.pdf>] [11 <./miller-705-report-supportin
-g-figures_files/figure-latex/unnamed-chunk-29-1.pdf>] [12 <./miller-705-report-
-supporting-figures_files/figure-latex/unnamed-chunk-30-1.pdf> <./miller-705-rep
-ort-supporting-figures_files/figure-latex/unnamed-chunk-31-1.pdf>] [13 <./mille
-r-705-report-supporting-figures_files/figure-latex/unnamed-chunk-33-1.pdf>] [14
- <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-35-1.
-pdf> <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-3
-6-1.pdf>] [15 <./miller-705-report-supporting-figures_files/figure-latex/unname
-d-chunk-37-1.pdf>] [16 <./miller-705-report-supporting-figures_files/figure-lat
-ex/unnamed-chunk-39-1.pdf> <./miller-705-report-supporting-figures_files/figure
--latex/unnamed-chunk-40-1.pdf>] [17 <./miller-705-report-supporting-figures_fil
-es/figure-latex/unnamed-chunk-41-1.pdf>] [18 <./miller-705-report-supporting-fi
-gures_files/figure-latex/unnamed-chunk-43-1.pdf> <./miller-705-report-supportin
-g-figures_files/figure-latex/unnamed-chunk-44-1.pdf>] [19 <./miller-705-report-
-supporting-figures_files/figure-latex/unnamed-chunk-45-1.pdf>] [20 <./miller-70
-5-report-supporting-figures_files/figure-latex/unnamed-chunk-47-1.pdf> <./mille
-r-705-report-supporting-figures_files/figure-latex/unnamed-chunk-48-1.pdf>] [21
- <./images/example-ntas.png> <./images/od-undirected-network.png>] [22 <./image
-s/od-undirected-matrix.png> <./images/od-undirected-matrix-complement.png>] [23
- <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-56-1.
-pdf>] [24 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-ch
-unk-65-1.pdf>] [25 <./miller-705-report-supporting-figures_files/figure-latex/u
-nnamed-chunk-67-1.pdf> <./miller-705-report-supporting-figures_files/figure-lat
-ex/unnamed-chunk-69-1.pdf>] (./miller-705-report-supporting-figures.aux) ) 
+[1{/usr/share/texlive/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./images/t
+riboro-line-rpa-map.png>] [2 <./images/triboro-conceptual-model-original.png>] 
+[3 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-6-1
+.pdf>] [4 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-ch
+unk-9-1.pdf>] [5 <./miller-705-report-supporting-figures_files/figure-latex/unn
+amed-chunk-10-1.pdf>] [6 <./miller-705-report-supporting-figures_files/figure-l
+atex/unnamed-chunk-11-1.pdf>] [7 <./miller-705-report-supporting-figures_files/
+figure-latex/unnamed-chunk-12-1.pdf>] [8 <./miller-705-report-supporting-figure
+s_files/figure-latex/unnamed-chunk-15-1.pdf> <./miller-705-report-supporting-fi
+gures_files/figure-latex/unnamed-chunk-16-1.pdf>] [9 <./miller-705-report-suppo
+rting-figures_files/figure-latex/unnamed-chunk-18-1.pdf>] [10 <./miller-705-rep
+ort-supporting-figures_files/figure-latex/unnamed-chunk-21-1.pdf> <./miller-705
+-report-supporting-figures_files/figure-latex/unnamed-chunk-22-1.pdf>] [11 <./m
+iller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-23-1.pdf> 
+<./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-24-1.p
+df>] [12 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chu
+nk-30-1.pdf>] [13 <./miller-705-report-supporting-figures_files/figure-latex/un
+named-chunk-31-1.pdf> <./miller-705-report-supporting-figures_files/figure-late
+x/unnamed-chunk-32-1.pdf>] [14 <./miller-705-report-supporting-figures_files/fi
+gure-latex/unnamed-chunk-34-1.pdf>] [15 <./miller-705-report-supporting-figures
+_files/figure-latex/unnamed-chunk-36-1.pdf> <./miller-705-report-supporting-fig
+ures_files/figure-latex/unnamed-chunk-37-1.pdf>] [16 <./miller-705-report-suppo
+rting-figures_files/figure-latex/unnamed-chunk-38-1.pdf>] [17 <./miller-705-rep
+ort-supporting-figures_files/figure-latex/unnamed-chunk-40-1.pdf> <./miller-705
+-report-supporting-figures_files/figure-latex/unnamed-chunk-41-1.pdf>] [18 <./m
+iller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-42-1.pdf>]
+[19 <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chunk-44
+-1.pdf> <./miller-705-report-supporting-figures_files/figure-latex/unnamed-chun
+k-45-1.pdf>] [20 <./miller-705-report-supporting-figures_files/figure-latex/unn
+amed-chunk-46-1.pdf>] [21 <./miller-705-report-supporting-figures_files/figure-
+latex/unnamed-chunk-48-1.pdf> <./miller-705-report-supporting-figures_files/fig
+ure-latex/unnamed-chunk-49-1.pdf>] [22 <./images/example-ntas.png> <./images/od
+-undirected-network.png>] [23 <./images/od-undirected-matrix.png> <./images/od-
+undirected-matrix-complement.png>] [24 <./miller-705-report-supporting-figures_
+files/figure-latex/unnamed-chunk-57-1.pdf>] [25 <./miller-705-report-supporting
+-figures_files/figure-latex/unnamed-chunk-66-1.pdf>] [26 <./miller-705-report-s
+upporting-figures_files/figure-latex/unnamed-chunk-68-1.pdf> <./miller-705-repo
+rt-supporting-figures_files/figure-latex/unnamed-chunk-70-1.pdf>] (./miller-705
+-report-supporting-figures.aux) ) 
 Here is how much of TeX's memory you used:
- 12581 strings out of 480806
- 200830 string characters out of 5905150
- 526188 words of memory out of 6000000
- 29687 multiletter control sequences out of 15000+600000
- 407818 words of font info for 42 fonts, out of 8000000 for 9000
+ 12549 strings out of 480806
+ 200548 string characters out of 5905150
+ 529649 words of memory out of 6000000
+ 29656 multiletter control sequences out of 15000+600000
+ 407499 words of font info for 41 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 74i,6n,77p,541b,340s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr
-/share/texlive/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</usr/share/texlive/texm
-f-dist/fonts/type1/public/lm/lmr10.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/lm/lmtt10.pfb>
-Output written on miller-705-report-supporting-figures.pdf (25 pages, 4525824 b
+ 74i,6n,77p,541b,338s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips
+/lm/lm-ec.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmr10.pfb>
+Output written on miller-705-report-supporting-figures.pdf (26 pages, 4870280 b
 ytes).
 PDF statistics:
- 449 PDF objects out of 1000 (max. 8388607)
- 313 compressed objects within 4 object streams
- 60 named destinations out of 1000 (max. 500000)
- 2229 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 454 PDF objects out of 1000 (max. 8388607)
+ 316 compressed objects within 4 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 2234 words of extra memory for PDF output out of 10000 (max. 10000000)
 
