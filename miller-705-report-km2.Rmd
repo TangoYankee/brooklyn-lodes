@@ -449,7 +449,7 @@ ggplot(
 
 Table of values at 10, 25, 50
 ```{r}
-times_of_interest <- c(10, 25, 50)*60
+times_of_interest <- c(12, 25, 50)*60
 
 ## subway predictions
 subway_predictions <- subway_connected_eq(times_of_interest)
@@ -470,7 +470,7 @@ walking_pred_low <- walking_predictions - (2*walking_se)
 walking_pred_high <- walking_predictions + (2*walking_se)
 
 predictions <- dplyr::tibble(
-  Minutes = c("Ten", "Twenty Five", "Fifty"),
+  Minutes = c("Twelve", "Twenty Five", "Fifty"),
   subway_predictions,
   subway_pred_low,
   subway_pred_high,

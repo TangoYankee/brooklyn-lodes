@@ -29,6 +29,11 @@ knitr::include_graphics("./images/triboro-conceptual-model-original.png")
 ```
 
 
+```{r, message=FALSE, echo=FALSE}
+## Constant for color palette
+S000_count_colors = "BuGn"
+```
+
 
 ```{r, message=FALSE, echo=FALSE, results='hide'}
 ### Import Files
@@ -208,10 +213,12 @@ tmap::tm_shape(bois_nta_dest) +
     col = "S000",
     style = "jenks",
     title = "Trips to work in NTA",
-    legend.outside.width = 0.6
+    legend.outside.width = 0.6,
+    palette = brewer.pal(5, S000_count_colors) 
   ) +
   tmap::tm_layout(
     legend.outside = TRUE,
+    legend.text.size = 1.2,
   )
 ```
 
@@ -419,10 +426,7 @@ ggplot(job_counts) +
 ```
 
 
-```{r, message=FALSE, echo=FALSE}
-## Constant for color palette
-S000_count_colors = "BuGn"
-```
+
 
 
 ```{r, message=FALSE, echo=FALSE, fig.width = 10, fig.height = 12, fig.cap="Number of jobs in each NTA tract. Job count is calculated from the sum of all trips which end in that NTA. It is standardized by the total area of the NTA. It is also transformed with a natural log."}
